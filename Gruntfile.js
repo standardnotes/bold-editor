@@ -14,6 +14,15 @@ module.exports = function(grunt) {
          dest: 'dist/redactor.js',
        },
 
+      dist: {
+        src: [
+          'dist/redactor.min.js',
+          'dist/app.min.js',
+        ],
+        // Optional for consumer whether they want this combined files. Can also import individual files.
+        dest: 'dist/dist.min.js',
+      },
+
        css: {
          src: [
            'redactor/src/redactor.min.css',
@@ -41,6 +50,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('default', [
     'concat:redactor', 'uglify:redactor',
+    'concat:dist',
     'concat:css'
   ]);
 };

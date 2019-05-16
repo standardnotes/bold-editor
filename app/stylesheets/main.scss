@@ -23,6 +23,8 @@ body, html {
 #editor {
   flex-grow: 1;
   font-family: monospace !important;
+  font-size: var(--sn-stylekit-font-size-editor) !important;
+  line-height: 1.3 !important;
   -webkit-overflow-scrolling: touch;
 
   pre {
@@ -67,6 +69,11 @@ body, html {
   a  {
     color: var(--sn-stylekit-info-color) !important;
   }
+}
+
+.re-button-icon {
+  font-size: calc(var(--sn-stylekit-font-size-editor) - 0.1rem) !important;
+  // padding: 9px 15px 6px 15px !important;
 }
 
 .re-button {
