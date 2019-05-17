@@ -1,4 +1,5 @@
-body, html {
+body,
+html {
   font-family: sans-serif;
   height: 100%;
   width: 100%;
@@ -30,10 +31,16 @@ body, html {
     border-color: var(--sn-stylekit-contrast-border-color);
     background-color: var(--sn-stylekit-contrast-background-color);
     color: var(--sn-stylekit-contrast-foreground-color); }
-    #editor table th, #editor table td {
+    #editor table th,
+    #editor table td {
       border: 1px solid var(--sn-stylekit-contrast-border-color); }
     #editor table tr:nth-child(2n) {
       background-color: var(--sn-stylekit-background-color); }
+
+.mac-desktop #editor,
+.windows-desktop #editor,
+.linux-desktop #editor {
+  font-family: Menlo, Consolas, 'DejaVu Sans Mono', monospace !important; }
 
 #filesafe-react-client {
   background-color: green; }
@@ -41,7 +48,12 @@ body, html {
 .redactor-styles {
   color: var(--sn-stylekit-editor-foreground-color) !important;
   font-family: monospace; }
-  .redactor-styles h1, .redactor-styles h2, .redactor-styles h3, .redactor-styles h4, .redactor-styles h5, .redactor-styles h6 {
+  .redactor-styles h1,
+  .redactor-styles h2,
+  .redactor-styles h3,
+  .redactor-styles h4,
+  .redactor-styles h5,
+  .redactor-styles h6 {
     color: var(--sn-stylekit-editor-foreground-color) !important; }
   .redactor-styles a {
     color: var(--sn-stylekit-info-color) !important; }
@@ -73,10 +85,12 @@ body, html {
   color: var(--sn-stylekit-foreground-color) !important;
   opacity: 0.5; }
 
-.re-dropdown-box-textcolor span, .redactor-dropdown-cells span {
+.re-dropdown-box-textcolor span,
+.redactor-dropdown-cells span {
   border-color: var(--sn-stylekit-background-color) !important; }
 
-.re-dropdown-box-textcolor a, .redactor-dropdown-cells a {
+.re-dropdown-box-textcolor a,
+.redactor-dropdown-cells a {
   color: var(--sn-stylekit-foreground-color) !important; }
 
 .redactor-dropdown-inline .redactor-dropdown-item-variable span {
@@ -101,7 +115,8 @@ body, html {
   border: 1px solid var(--sn-stylekit-contrast-background-color) !important;
   background: var(--sn-stylekit-editor-background-color) !important; }
 
-.redactor-modal-header, .redactor-close {
+.redactor-modal-header,
+.redactor-close {
   color: var(--sn-stylekit-editor-foreground-color) !important; }
 
 .redactor-modal-body {
@@ -109,7 +124,8 @@ body, html {
   padding-bottom: inherit !important;
   overflow: scroll; }
 
-.redactor-styles mark, .redactor-dropdown-inline .redactor-dropdown-item-marked span {
+.redactor-styles mark,
+.redactor-dropdown-inline .redactor-dropdown-item-marked span {
   color: var(--sn-stylekit-info-contrast-color) !important;
   background-color: var(--sn-stylekit-info-color) !important; }
 
@@ -121,14 +137,17 @@ body, html {
 .redactor-styles var {
   color: var(--sn-stylekit-info-color) !important; }
 
-ol *, li * {
+ol *,
+li * {
   font-family: inherit !important; }
 
-.redactor-source-view .redactor-toolbar, .redactor-source.redactor-source-open {
+.redactor-source-view .redactor-toolbar,
+.redactor-source.redactor-source-open {
   background-color: var(--sn-stylekit-contrast-background-color) !important;
   color: var(--sn-stylekit-contrast-foreground-color) !important; }
 
-.redactor-modal input, .redactor-modal input:hover {
+.redactor-modal input,
+.redactor-modal input:hover {
   background-color: var(--sn-stylekit-contrast-background-color) !important;
   color: var(--sn-stylekit-contrast-foreground-color) !important; }
 
@@ -140,7 +159,8 @@ ol *, li * {
   .redactor-modal label .req {
     color: var(--sn-stylekit-info-color); }
 
-.redactor-modal button, .redactor-modal button:hover {
+.redactor-modal button,
+.redactor-modal button:hover {
   background-color: var(--sn-stylekit-info-color);
   color: var(--sn-stylekit-info-contrast-color);
   border: none; }
@@ -148,7 +168,8 @@ ol *, li * {
 .redactor-modal button:hover {
   opacity: 0.8; }
 
-.redactor-modal .redactor-button-unstyled, .redactor-modal button.redactor-button-unstyled:hover {
+.redactor-modal .redactor-button-unstyled,
+.redactor-modal button.redactor-button-unstyled:hover {
   background-color: var(--sn-stylekit-contrast-background-color) !important;
   color: var(--sn-stylekit-contrast-foreground-color) !important; }
 
