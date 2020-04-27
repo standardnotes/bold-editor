@@ -1767,7 +1767,7 @@ $R.opts = {
     inlineTags: ['a', 'span', 'strong', 'strike', 'b', 'u', 'em', 'i', 'code', 'del', 'ins', 'samp', 'kbd', 'sup', 'sub', 'mark', 'var', 'cite', 'small', 'abbr'],
     blockTags: ['pre', 'ul', 'ol', 'li', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',  'dl', 'dt', 'dd', 'div', 'table', 'tbody', 'thead', 'tfoot', 'tr', 'th', 'td', 'blockquote', 'output', 'figcaption', 'figure', 'address', 'section', 'header', 'footer', 'aside', 'article', 'iframe'],
     regex: {
-        youtube: /https?:\/\/(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube\.com\S*[^\w\-\s])([\w\-]{11})(?=[^\w\-]|$)(?![?=&+%\w.-]*(?:['"][^<>]*>|<\/a>))[?=&+%\w.-]*/gi,
+        youtube: /https?:\/\/(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube\.com\S*[^\w\-\s])([\w\-]{11})((?=[^\w\-]|$)(?![?=&+%\w.-]*(?:['"][^<>]*>|<\/a>))[?=&+%\w.-]*)/gi,
         vimeo: /(http|https)?:\/\/(?:www.|player.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_-]+)?/gi,
         imageurl: /((https?|www)[^\s]+\.)(jpe?g|png|gif)(\?[^\s-]+)?/gi,
         url: /(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/gi
@@ -9243,18 +9243,18 @@ $R.add('service', 'autoparser', {
             var str, re;
             if (html.match(this.opts.regex.youtube))
             {
-                str = '//www.youtube.com/embed/$1';
+                str = 'https://www.youtube.com/embed/$1$2';
                 re = this.opts.regex.youtube;
             }
             else if (html.match(this.opts.regex.vimeo))
             {
-                str = '//player.vimeo.com/video/$2';
+                str = 'https://player.vimeo.com/video/$2';
                 re = this.opts.regex.vimeo;
             }
 
             var $video = this.component.create('video', iframeStart + str + iframeEnd);
 
-            html = html.replace(re, $video.get().outerHTML);
+            html = html.replace(re, $video.get().outerHTML).replace('?t=', '?start=');
         }
 
         // links
@@ -9328,12 +9328,12 @@ $R.add('service', 'autoparser', {
 
                 if (content.match(this.opts.regex.youtube))
                 {
-                    str = '//www.youtube.com/embed/$1';
+                    str = 'https://www.youtube.com/embed/$1$2';
                     re = this.opts.regex.youtube;
                 }
                 else if (content.match(this.opts.regex.vimeo))
                 {
-                    str = '//player.vimeo.com/video/$2';
+                    str = 'https://player.vimeo.com/video/$2';
                     re = this.opts.regex.vimeo;
                 }
 
@@ -15620,7 +15620,7 @@ $R.add('module', 'upload', {
     },
     _onClick: function(e)
     {
-        e.preventDefault();
+        // e.preventDefault();
         this.$el.click();
     },
     _onChange: function(e)
