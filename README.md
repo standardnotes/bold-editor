@@ -56,26 +56,19 @@ Start by following the instructions here: https://docs.standardnotes.org/extensi
 
 This will setup a local server from which the bold-editor can be imported via the desktop app or the web app. You should be able to use the bold-editor now.
 
-However, this will not allow for easy development because the app will not automatically build to the dist folder. We will use webpack for this.
+However, this will not allow for easy development because the app will not automatically build to the dist folder. We will use [webpack](https://webpack.js.org/guides/development/#using-watch-mode) for this.
 
-1. In the `package.json` file, under `scripts`, add the following line:
-
-    ```json
-    "watch": "webpack --watch"
-    ```
-    (Additional webpack documentation can be found [here](https://webpack.js.org/guides/development/#using-watch-mode))
-
-2. Use `npm run watch` to automatically build files.
+1. Use `npm run watch` to automatically build files.
    - There should be an existing console open that is running  `http-server`
    - Open a new console for `npm run watch`
 
-3. Disable the cache on the desktop app/web app.
+2. Disable the cache on the desktop app/web app.
    - We want to ensure that the latest build is always loaded when the app is refreshed
    - Open devtools (`Ctrl+Shift+i`) and go to `Network`
    - Check `Disable cache`
    - On some systems, devtools must be kept open for this to work
 
-4. Make some changes to `Editor.js`, reload the desktop or web app, and your changes will show up.
+3. Make some changes to `Editor.js`, reload the desktop or web app, and your changes will show up.
 
 ## Development with webpack-dev-server
 
