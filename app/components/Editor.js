@@ -116,6 +116,10 @@ export default class Editor extends React.Component {
       setEditorRawText: (rawText) => {
         let cleaned = this.redactor.cleaner.input(rawText);
         $R('#editor', 'source.setCode', cleaned);
+
+        // Required for default end focus because setCode happens to focus at the beginning
+        // This function is called on note load, so this affects 'default' focus
+        this.redactor.editor.endFocus();
       }
     });
 
@@ -178,8 +182,6 @@ export default class Editor extends React.Component {
       });
     });
 
-    // "Set the focus to the editor layer to the end of the content."
-    // Doesn't seem to currently work, focuses at the beginning.
     this.redactor.editor.endFocus();
   }
 
