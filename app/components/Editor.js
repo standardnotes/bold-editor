@@ -21,6 +21,7 @@ export default class Editor extends React.Component {
   configureEditorKit() {
     let delegate = new EditorKitDelegate({
       insertRawText: (rawText) => {
+        // Used to insert Filesafe file descriptor syntax
         this.redactor.insertion.insertHtml(rawText);
       },
       preprocessElement: (element) => {
@@ -114,12 +115,15 @@ export default class Editor extends React.Component {
         $R('#editor', 'module.buffer.clear');
       },
       setEditorRawText: (rawText) => {
+        // Get the current caret location
+        let caretLocation = this.redactor.selection.getPosition();
+        let point = {clientX: caretLocation.left, clientY: caretLocation.top};
+
         let cleaned = this.redactor.cleaner.input(rawText);
         $R('#editor', 'source.setCode', cleaned);
 
-        // Required for default end focus because setCode happens to focus at the beginning
-        // This function is called on note load, so this affects 'default' focus
-        this.redactor.editor.endFocus();
+        // Place caret at saved location
+        this.redactor.insertion.insertToPoint(point, "");
       }
     });
 
@@ -192,7 +196,7 @@ export default class Editor extends React.Component {
       return;
     }
     for(let file of files) {
-      // Observers will handle successful upload
+      // Observers in EditorKitInternal.js will handle successful upload
       this.editorKit.uploadJSFileObject(file).then((descriptor) => {
         if(!descriptor || !descriptor.uuid) {
           // alert("File failed to upload. Please try again");
