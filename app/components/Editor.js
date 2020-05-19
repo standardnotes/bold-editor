@@ -122,8 +122,16 @@ export default class Editor extends React.Component {
         let cleaned = this.redactor.cleaner.input(rawText);
         $R('#editor', 'source.setCode', cleaned);
 
-        // Place caret at saved location
-        this.redactor.insertion.insertToPoint(point, "");
+        // Place caret at saved location, insert custom marker node to avoid inserting newlines
+        let marker = this.redactor.insertion.insertToPoint(point, "<marker>");
+
+        this.redactor.caret.setAfter(marker[0]);
+
+        for (let i = 0; i < marker.length; i++){
+          // Immediately remove the custom marker node
+          // If for whatever reason there is more than one marker, remove them all
+          marker[i].remove();
+        }        
       }
     });
 
