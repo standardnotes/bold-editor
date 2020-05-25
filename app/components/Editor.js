@@ -19,6 +19,10 @@ export default class Editor extends React.Component {
   }
 
   configureEditorKit() {
+    // EditorKit is a wrapper on top of the component manager to make it easier to build editors
+    // As such, it very general and does not know how the functions are implemented, just that they are needed 
+    // It is up to the Bold Editor wrapper to implement these important functions
+
     let delegate = new EditorKitDelegate({
       insertRawText: (rawText) => {
         // Used to insert Filesafe file descriptor syntax
@@ -71,8 +75,18 @@ export default class Editor extends React.Component {
         return this.redactor.editor.getElement().find(selector).nodes;
       },
       getCurrentLineText: () => {
-        // Returns the node where the cursor currently is. Typically a paragraph if no formatter, otherwise the closest formatted element
+        // Returns the text content of the node where the cursor currently is. Typically a paragraph if no formatter, otherwise the closest formatted element
         let node = this.redactor.selection.getCurrent();
+
+        // If the node is a figure, remove the <figure> tag and return the child nodes
+        // This is to allow for saving of images, videos, audio when loading Filesafe elements
+        if (node.nodeName === "FIGURE") {
+          let inserted = node.innerHTML;
+          node.remove();
+          this.redactor.insertion.insertHtml(inserted);
+          return inserted;
+        }
+        
         return node.textContent;
       },
       getPreviousLineText: () => {
