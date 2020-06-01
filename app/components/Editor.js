@@ -129,23 +129,32 @@ export default class Editor extends React.Component {
         $R('#editor', 'module.buffer.clear');
       },
       setEditorRawText: (rawText) => {
-        // Get the current caret location
-        let caretLocation = this.redactor.selection.getPosition();
-        let point = {clientX: caretLocation.left, clientY: caretLocation.top};
+        // If currently focused, maintain caret location.
+        const focused = this.redactor.editor.isFocus();
+        let point;
 
+        if (focused) {
+          // Get the current caret location.
+          let caretLocation = this.redactor.selection.getPosition();
+          point = {clientX: caretLocation.left, clientY: caretLocation.top};
+        }
+        
+        // Set text.
         let cleaned = this.redactor.cleaner.input(rawText);
         $R('#editor', 'source.setCode', cleaned);
 
-        // Place caret at saved location, insert custom marker node to avoid inserting newlines
-        let marker = this.redactor.insertion.insertToPoint(point, "<marker>");
+        if (focused) {
+          // Place caret at saved location, insert custom marker node to avoid inserting newlines
+          let marker = this.redactor.insertion.insertToPoint(point, "<marker>");
 
-        this.redactor.caret.setAfter(marker[0]);
+          this.redactor.caret.setAfter(marker[0]);
 
-        for (let i = 0; i < marker.length; i++){
-          // Immediately remove the custom marker node
-          // If for whatever reason there is more than one marker, remove them all
-          marker[i].remove();
-        }        
+          for (let i = 0; i < marker.length; i++){
+            // Immediately remove the custom marker node
+            // If for whatever reason there is more than one marker, remove them all
+            marker[i].remove();
+          }  
+        }
       }
     });
 
