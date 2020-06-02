@@ -75,7 +75,9 @@ export default class Editor extends React.Component {
         return this.redactor.editor.getElement().find(selector).nodes;
       },
       getCurrentLineText: () => {
-        // Returns the text content of the node where the cursor currently is. Typically a paragraph if no formatter, otherwise the closest formatted element
+        // Returns the text content of the node where the cursor currently is.
+        // Typically a paragraph if no formatter, otherwise the closest formatted element
+        // If the node contains a figure, returns the child nodes. 
         let node = this.redactor.selection.getCurrent();
 
         // If the node is a figure, remove the <figure> tag and return the child nodes
@@ -90,6 +92,7 @@ export default class Editor extends React.Component {
         return node.textContent;
       },
       getPreviousLineText: () => {
+        // Returns the text content of the previous node, or the node itself if it is falsy.
         let currentElement = this.redactor.selection.getElement();
         let previousSibling = currentElement.previousSibling;
         return previousSibling && previousSibling.textContent;
@@ -149,7 +152,7 @@ export default class Editor extends React.Component {
         $R('#editor', 'source.setCode', cleaned);
 
         if (focused) {
-          // If caret location saved, restore.
+          // If caret location saved, restore, otherwise ignore.
 
           // Insert custom marker node to avoid inserting newlines
           const marker = this.redactor.insertion.insertToPoint(point, "<marker>");
