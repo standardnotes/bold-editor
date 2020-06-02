@@ -129,23 +129,30 @@ export default class Editor extends React.Component {
         $R('#editor', 'module.buffer.clear');
       },
       setEditorRawText: (rawText) => {
-        // If currently focused, maintain caret location.
-        const focused = this.redactor.editor.isFocus();
+        // Sets the code for the editor, maintains caret location if available.
+
+        let focused = this.redactor.editor.isFocus();
         let point;
 
         if (focused) {
-          // Get the current caret location.
-          let caretLocation = this.redactor.selection.getPosition();
-          point = {clientX: caretLocation.left, clientY: caretLocation.top};
+          // Attempt to save caret location, otherwise ignore.
+          try {
+            let caretLocation = this.redactor.selection.getPosition();
+            point = {clientX: caretLocation.left, clientY: caretLocation.top};
+          } catch (error) {
+            focused = false;
+          }
         }
         
         // Set text.
-        let cleaned = this.redactor.cleaner.input(rawText);
+        const cleaned = this.redactor.cleaner.input(rawText);
         $R('#editor', 'source.setCode', cleaned);
 
         if (focused) {
-          // Place caret at saved location, insert custom marker node to avoid inserting newlines
-          let marker = this.redactor.insertion.insertToPoint(point, "<marker>");
+          // If caret location saved, restore.
+
+          // Insert custom marker node to avoid inserting newlines
+          const marker = this.redactor.insertion.insertToPoint(point, "<marker>");
 
           this.redactor.caret.setAfter(marker[0]);
 
