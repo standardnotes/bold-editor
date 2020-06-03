@@ -133,25 +133,20 @@ export default class Editor extends React.Component {
       },
       setEditorRawText: (rawText) => {
         // Sets the code for the editor, maintains caret location if available.
-
-        let focused = this.redactor.editor.isFocus();
+        const focused = this.redactor.editor.isFocus();
         let point;
 
         if (focused) {
           // Attempt to save caret location, otherwise ignore.
-          try {
-            let caretLocation = this.redactor.selection.getPosition();
-            point = {clientX: caretLocation.left, clientY: caretLocation.top};
-          } catch (error) {
-            focused = false;
-          }
+          const caretLocation = this.redactor.selection.getPosition();
+          point = {clientX: caretLocation.left, clientY: caretLocation.top};
         }
-        
+
         // Set text.
         const cleaned = this.redactor.cleaner.input(rawText);
         $R('#editor', 'source.setCode', cleaned);
 
-        if (focused) {
+        if (focused && point) {
           // If caret location saved, restore, otherwise ignore.
 
           // Insert custom marker node to avoid inserting newlines
@@ -159,10 +154,10 @@ export default class Editor extends React.Component {
 
           this.redactor.caret.setAfter(marker[0]);
 
-          for (let i = 0; i < marker.length; i++){
+          for (const markerNode of marker){
             // Immediately remove the custom marker node
             // If for whatever reason there is more than one marker, remove them all
-            marker[i].remove();
+            markerNode.remove();
           }  
         }
       }
@@ -226,8 +221,6 @@ export default class Editor extends React.Component {
         isEnter: key == this.redactor.keycodes.ENTER
       });
     });
-
-    this.redactor.editor.endFocus();
   }
 
   onEditorFilesDrop(files) {
