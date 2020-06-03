@@ -1,10 +1,10 @@
 const webpack = require('webpack');
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const uglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
+  mode: 'production',
   devServer: {
     contentBase: path.join(__dirname, 'dist'),
     hot: false,
@@ -25,23 +25,28 @@ module.exports = {
     filename: './app.min.js'
   },
   module: {
-    loaders: [
+    rules: [
       { test: /\.css$/, include: path.resolve(__dirname, 'app'), loader: 'style-loader!css-loader' },
       {
         test: /\.scss$/,
         exclude: /node_modules/,
-        use: ExtractTextPlugin.extract({
-          fallback: 'style-loader',
-          use: [
-            'css-loader',
-            { loader: 'sass-loader', query: { sourceMap: false } },
-          ],
-          publicPath: '../'
-        }),
+        use: [
+          {
+            loader: MiniCssExtractPlugin.loader, 
+            options: {
+              publicPath: '../',
+            }
+          },
+          'css-loader',
+          'sass-loader'
+        ]
       },
       { test: /\.js[x]?$/, include: [
         path.resolve(__dirname, 'app'),
-      ], exclude: /node_modules/, loader: 'babel-loader' }
+      ], exclude: /node_modules/, loader: 'babel-loader' },
+      {
+
+      }
     ]
   },
   resolve: {
@@ -51,20 +56,12 @@ module.exports = {
     }
   },
   plugins: [
-    new ExtractTextPlugin({ filename: './app.css', disable: false, allChunks: true}),
-    new uglifyJsPlugin({
-      compress: {
-        warnings: false
-      }
-    }),
-    new webpack.DefinePlugin({
-      'process.env': {
-        NODE_ENV: JSON.stringify('production')
-      }
-    }),
-    new CopyWebpackPlugin([
-      { from: './app/index.html', to: 'index.html' },
-      { from: './node_modules/sn-editor-kit/dist/filesafe-js/EncryptionWorker.js', to: 'filesafe-js/EncryptionWorker.js' },
-    ])
+    new MiniCssExtractPlugin(),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: './app/index.html', to: 'index.html' },
+        { from: './node_modules/sn-editor-kit/dist/filesafe-js/EncryptionWorker.js', to: 'filesafe-js/EncryptionWorker.js' },
+      ],
+    })
   ]
 };
