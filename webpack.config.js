@@ -55,6 +55,9 @@ module.exports = {
       stylekit: path.join(__dirname, 'node_modules/sn-stylekit/dist/stylekit.css'),
     }
   },
+  performance: {
+    hints: false
+  },
   plugins: [
     new MiniCssExtractPlugin(),
     new CopyWebpackPlugin({
