@@ -32,11 +32,11 @@ export default class Editor extends React.Component {
         // Convert inserting element to format Redactor wants.
         // This will wrap img elements, for example, in a figure element.
         // We also want to copy over attributes
-        let cleaned = this.redactor.cleaner.input(element.outerHTML);
-        let newElement = $R.dom(cleaned).nodes[0];
+        const cleaned = this.redactor.cleaner.input(element.outerHTML);
+        const newElement = $R.dom(cleaned).nodes[0];
 
 
-        for(let attribute of element.attributes) {
+        for(const attribute of element.attributes) {
           newElement.setAttribute(attribute.nodeName, attribute.nodeValue);
         }
 
@@ -88,12 +88,12 @@ export default class Editor extends React.Component {
       },
       getPreviousLineText: () => {
         // Returns the text content of the previous node, or the node itself if it is falsy.
-        let currentElement = this.redactor.selection.getElement();
-        let previousSibling = currentElement.previousSibling;
+        const currentElement = this.redactor.selection.getElement();
+        const previousSibling = currentElement.previousSibling;
         return previousSibling && previousSibling.textContent;
       },
       replaceText: ({regex, replacement, previousLine}) => {
-        let marker = this.redactor.marker.insert('start');
+        const marker = this.redactor.marker.insert('start');
         let node;
         if(previousLine) {
           node = this.redactor.selection.getElement().previousSibling;
@@ -106,7 +106,7 @@ export default class Editor extends React.Component {
           return;
         }
 
-        let nodeText = node.textContent;
+        const nodeText = node.textContent;
         // Remove our match from this element by replacing with empty string.
         // We'll add in our actual replacement as a new element
         nodeText = nodeText.replace(/&nbsp;/, ' ');
@@ -210,7 +210,7 @@ export default class Editor extends React.Component {
     });
 
     this.redactor.editor.getElement().on('keyup.textsearcher', (event) => {
-      let key = event.which;
+      const key = event.which;
       this.editorKit.onEditorKeyUp({
         key,
         isSpace: key == this.redactor.keycodes.SPACE,
@@ -225,7 +225,7 @@ export default class Editor extends React.Component {
       this.redactor.plugin.filesafe.open();
       return;
     }
-    for(let file of files) {
+    for(const file of files) {
       // Observers in EditorKitInternal.js will handle successful upload
       this.editorKit.uploadJSFileObject(file).then((descriptor) => {
         if(!descriptor || !descriptor.uuid) {
