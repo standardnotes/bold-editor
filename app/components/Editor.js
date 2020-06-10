@@ -44,7 +44,7 @@ export default class Editor extends React.Component {
           // In this case, our element was wrapped in some other element.
           // For example, if element.tagName is 'img', it will be wrapped in a 'figure' element.
           // If it's 'video', it will not be wrapped at all
-          newElement.setAttribute("ghost", true);
+
           newElement.removeAttribute("fscollapsable");
         }
 
