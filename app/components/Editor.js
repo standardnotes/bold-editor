@@ -76,16 +76,11 @@ export default class Editor extends React.Component {
       },
       getCurrentLineText: () => {
         // Returns the text content of the node where the cursor currently is.
-        // Typically a paragraph if no formatter, otherwise the closest formatted element
-        // If the node contains a figure, returns the child nodes. 
-        let node = this.redactor.selection.getCurrent();
-
-        // If the node is a figure, remove the <figure> tag and return the child nodes
-        // This is to allow for saving of images, videos, audio when loading Filesafe elements
-        if (node.nodeName === "FIGURE") {
-          let inserted = node.innerHTML;
-          node.remove();
-          this.redactor.insertion.insertHtml(inserted);
+        // If the text content is empty, returns the child nodes instead. 
+        const node = this.redactor.selection.getCurrent();
+        
+        if (!node.textContent) {
+          const inserted = node.innerHTML;
           return inserted;
         }
         
@@ -205,6 +200,7 @@ export default class Editor extends React.Component {
         }
       },
       imageEditable: false,
+      imageFigure: false,
       imageCaption: false,
       imageLink: false,
       imageResizable: true,
