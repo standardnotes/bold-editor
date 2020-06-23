@@ -78,13 +78,7 @@ export default class Editor extends React.Component {
         // Returns the text content of the node where the cursor currently is.
         // If the text content is empty, returns the child nodes instead. 
         const node = this.redactor.selection.getCurrent();
-        
-        if (!node.textContent) {
-          const inserted = node.innerHTML;
-          return inserted;
-        }
-        
-        return node.textContent;
+        return node.textContent || node.innerHTML;
       },
       getPreviousLineText: () => {
         // Returns the text content of the previous node, or the node itself if it is falsy.
@@ -106,7 +100,7 @@ export default class Editor extends React.Component {
           return;
         }
 
-        const nodeText = node.textContent;
+        let nodeText = node.textContent;
         // Remove our match from this element by replacing with empty string.
         // We'll add in our actual replacement as a new element
         nodeText = nodeText.replace(/&nbsp;/, ' ');
