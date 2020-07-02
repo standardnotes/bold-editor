@@ -35,7 +35,6 @@ export default class Editor extends React.Component {
         const cleaned = this.redactor.cleaner.input(element.outerHTML);
         const newElement = $R.dom(cleaned).nodes[0];
 
-
         for(const attribute of element.attributes) {
           newElement.setAttribute(attribute.nodeName, attribute.nodeValue);
         }
@@ -137,7 +136,6 @@ export default class Editor extends React.Component {
 
         if (focused && point) {
           // If caret location saved, restore, otherwise ignore.
-
           // Insert custom marker node to avoid inserting newlines
           const marker = this.redactor.insertion.insertToPoint(point, "<marker>");
 
@@ -171,6 +169,7 @@ export default class Editor extends React.Component {
       toolbarFixed: true,
       tabAsSpaces: 2, // currently the only way tab works is if you use spaces. Traditional doesnt work
       tabKey: true,
+      linkSize: Infinity,
       buttonsAdd: ['filesafe'],
       buttons: [
         'bold', 'italic', 'underline', 'deleted', 'format', 'fontsize', 'fontfamily',
