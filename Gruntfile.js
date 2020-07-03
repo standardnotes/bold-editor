@@ -34,7 +34,7 @@ module.exports = function(grunt) {
        }
      },
 
-     terser: {
+     uglify: {
        redactor: {
          src: ['dist/redactor.js'],
          dest: 'dist/redactor.min.js'
@@ -45,11 +45,11 @@ module.exports = function(grunt) {
 
   grunt.loadNpmTasks('grunt-newer');
   grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-terser');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-concat');
 
   grunt.registerTask('default', [
-    'concat:redactor', 'terser:redactor',
+    'concat:redactor', 'uglify:redactor',
     'concat:dist',
     'concat:css'
   ]);
