@@ -1,6 +1,6 @@
 {
   "name": "sn-bold-editor",
-  "version": "1.0.5",
+  "version": "1.0.9",
   "main": "dist/dist.js",
   "scripts": {
     "lint": "eslint --cache --ignore-path .gitignore --ext .jsx,.js --format=node_modules/eslint-formatter-pretty .",
@@ -31,7 +31,7 @@
     "extract-text-webpack-plugin": "^3.0.2",
     "grunt-contrib-watch": "^1.0.0",
     "filesafe-embed": "1.0.8",
-    "node-sass": "^4.9.3",
+    "node-sass": "^4.14.1",
     "open-browser-webpack-plugin": "0.0.3",
     "react": "16.x",
     "react-dom": "16.0.x",
