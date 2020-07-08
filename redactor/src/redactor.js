@@ -1,7 +1,7 @@
 /*
     Redactor
-    Version 3.4.1
-    Updated: June 24, 2020
+    Version 3.3.5
+    Updated: March 29, 2020
 
     http://imperavi.com/redactor/
 
@@ -587,10 +587,10 @@ Dom.prototype = {
             }
             else
             {
-                if (node.parentNode !== null) {
-                    for (var i = frag instanceof Node ? [frag] : this._toArray(frag).reverse(), s = 0; s < i.length; s++) {
-                        node.parentNode.insertBefore(i[s], node.nextSibling);
-                    }
+                var elms = (frag instanceof Node) ? [frag] : this._toArray(frag).reverse();
+                for (var i = 0; i < elms.length; i++)
+                {
+                    node.parentNode.insertBefore(elms[i], node.nextSibling);
                 }
             }
 
@@ -1332,7 +1332,7 @@ var $R = function(selector, options)
 
 // Globals
 $R.app = [];
-$R.version = '3.4.1';
+$R.version = '3.3.5';
 $R.options = {};
 $R.modules = {};
 $R.services = {};
@@ -1766,7 +1766,7 @@ $R.opts = {
     blockTags: ['pre', 'ul', 'ol', 'li', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',  'dl', 'dt', 'dd', 'div', 'table', 'tbody', 'thead', 'tfoot', 'tr', 'th', 'td', 'blockquote', 'output', 'figcaption', 'figure', 'address', 'section', 'header', 'footer', 'aside', 'article', 'iframe'],
     regex: {
         youtube: /https?:\/\/(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube\.com\S*[^\w\-\s])([\w\-]{11})(?=[^\w\-]|$)(?![?=&+%\w.-]*(?:['"][^<>]*>|<\/a>))[?=&+%\w.-]*/gi,
-        vimeo: /(http|https)?:\/\/(?:www.|player.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:\/[a-zA-Z0-9_-]+)?/gi,
+        vimeo: /(http|https)?:\/\/(?:www.|player.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_-]+)?/gi,
         imageurl: /((https?|www)[^\s]+\.)(jpe?g|png|gif)(\?[^\s-]+)?/gi,
         url: /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi
     },
@@ -4458,10 +4458,6 @@ $R.add('service', 'editor', {
     saveScroll: function()
     {
         this.scrolltop = this._getScrollTarget().scrollTop();
-        if (this.opts.maxHeight) {
-            this.scrolltopin = this.$editor.scrollTop();
-        }
-
     },
     restoreScroll: function()
     {
@@ -4469,11 +4465,6 @@ $R.add('service', 'editor', {
         {
             this._getScrollTarget().scrollTop(this.scrolltop);
             this.scrolltop = false;
-        }
-
-        if (this.scrolltopin) {
-            this.$editor.scrollTop(this.scrolltopin);
-            this.scrolltopin = false;
         }
     },
 
@@ -4761,9 +4752,7 @@ $R.add('service', 'toolbar', {
         {
             observer = this.buttonsObservers[name];
             button = this.getButton(name);
-            if (!button.isDisabled()) {
-                this.app.broadcast('button.' + observer + '.observe', button);
-            }
+            this.app.broadcast('button.' + observer + '.observe', button);
         }
 
         // inline buttons
@@ -5590,7 +5579,6 @@ $R.add('service', 'cleaner', {
 
         // local
         this.storedComponents = [];
-        this.storedComments = [];
         this.storedImages = [];
         this.storedLinks = [];
         this.deniedTags = ['font', 'html', 'head', 'link', 'title', 'body', 'meta', 'applet'];
@@ -5613,30 +5601,8 @@ $R.add('service', 'cleaner', {
     },
     input: function(html, paragraphize, started)
     {
-        // store
-        var storedComments = [];
-        html = this.storeComments(html, storedComments);
-
         // pre/code
-        html = this.encodeCode(html);
-
-        // sanitize
-        var $wrapper = this.utils.buildWrapper(html);
-        $wrapper.find('img, svg, details').removeAttr('onload onerror ontoggle');
-        var imageattrs = ['alt', 'title', 'src', 'class', 'width', 'height', 'srcset', 'style', 'usemap'];
-        $wrapper.find('img').each(function(node) {
-            if (node.attributes.length > 0) {
-                var attrs = node.attributes;
-                for (var i = attrs.length - 1; i >= 0; i--) {
-                    if (attrs[i].name.search(/^data\-/) === -1 && imageattrs.indexOf(attrs[i].name) === -1) {
-                        node.removeAttribute(attrs[i].name);
-                    }
-                }
-            }
-        });
-
-        // get wrapper html
-        html = this.utils.getWrapperHtml($wrapper);
+        html = this.encodePreCode(html);
 
         // converting entity
         html = html.replace(/\$/g, '&#36;');
@@ -5665,12 +5631,29 @@ $R.add('service', 'cleaner', {
         // clear wrapped components
         html = this._cleanWrapped(html);
 
-        // restore comments
-        html = this.restoreComments(html, storedComments);
+        var $wrapper = this.utils.buildWrapper(html);
+
+        // remove onload
+        $wrapper.find('img, svg').removeAttr('onload');
+
+        // remove image attributes
+        var imageattrs = ['alt', 'title', 'src', 'class', 'width', 'height', 'srcset', 'style'];
+        $wrapper.find('img').each(function(node) {
+            if (node.attributes.length > 0) {
+                var attrs = node.attributes;
+                for (var i = attrs.length - 1; i >= 0; i--) {
+                    if (attrs[i].name.search(/^data\-/) === -1 && imageattrs.indexOf(attrs[i].name) === -1) {
+                        node.removeAttribute(attrs[i].name);
+                    }
+                }
+            }
+        });
+
+        // get wrapper html
+        html = this.utils.getWrapperHtml($wrapper);
 
         // paragraphize
         html = (paragraphize) ? this.paragraphize(html) : html;
-
 
         return html;
     },
@@ -5884,10 +5867,6 @@ $R.add('service', 'cleaner', {
         html = html.replace(/<li><p>/gi, '<li>');
         html = html.replace(/<\/p><\/li>/gi, '</li>');
 
-        // gmail list paste
-        html = html.replace(/^<li/gi, '<ul><li');
-        html = html.replace(/<\/li>$/gi, '</li></ul>');
-
         // convert lines to br
         if (this.opts.breakline) {
             html = html.replace(/\n/g, '<br>');
@@ -5929,24 +5908,6 @@ $R.add('service', 'cleaner', {
     {
         var paragraphize = $R.create('cleaner.paragraphize', this.app);
         html = paragraphize.convert(html);
-        return html;
-    },
-    storeComments: function(html, storedComments) {
-        var comments = html.match(new RegExp('<!--([\\w\\W]*?)-->', 'gi'));
-        if (comments !== null) {
-            for (var i = 0; i < comments.length; i++) {
-                html = html.replace(comments[i], '#####xstarthtmlcommentzz' + i + 'xendhtmlcommentzz#####');
-                storedComments.push(comments[i]);
-            }
-        }
-
-        return html;
-    },
-    restoreComments: function(html, storedComments) {
-        for (var i = 0; i < storedComments.length; i++) {
-            html = html.replace('#####xstarthtmlcommentzz' + i + 'xendhtmlcommentzz#####', storedComments[i]);
-        }
-
         return html;
     },
 
@@ -6135,52 +6096,32 @@ $R.add('service', 'cleaner', {
 
         return html;
     },
-
-    encodeCode: function(html) {
-        // replace all tags
-        html = html.replace(/<(.*?)>/gi, 'xtagstartz$1xtagendz');
-
-        // revert pre / code
-        html = html.replace(/xtagstartzpre(.*?)xtagendz/g, '<pre$1>');
-        html = html.replace(/xtagstartzcode(.*?)xtagendz/g, '<code$1>');
-        html = html.replace(/xtagstartz\/codextagendz/g, '</code>');
-        html = html.replace(/xtagstartz\/prextagendz/g, '</pre>');
-
-        // encode
-        html = this._encodeCode(html);
-
-        // revert all tags
-        html = html.replace(/xtagstartz(.*?)xtagendz/g, '<$1>');
-        html = html.replace(/xtagstartz\/(.*?)xtagendz/g, '</$1>');
-
-        return html;
-    },
-    _encodeCode: function(html) {
-        var $wrapper = this.utils.buildWrapper(html);
-        $wrapper.find('pre code, pre, code').each(this._encodeNode.bind(this));
-
-        return this.utils.getWrapperHtml($wrapper);
-    },
-    _encodeNode: function(node) {
-        var first = node.firstChild;
-        var html = node.innerHTML;
-        if (node.tagName === 'PRE' && first && first.tagName === 'CODE') {
-            return;
+    encodePreCode: function(html)
+    {
+        var matched = html.match(new RegExp('<code(.*?)>(.*?)<pre(.*?)>(.*?)</pre>(.*?)</code>', 'gi'));
+        if (matched !== null)
+        {
+            for (var i = 0; i < matched.length; i++)
+            {
+                var arr = matched[i].match(new RegExp('<pre(.*?)>([\\w\\W]*?)</pre>', 'i'));
+                html = html.replace(arr[0], this.encodeEntities(arr[0]));
+            }
         }
 
-        html = html.replace(/xtagstartz/g, '<');
-        html = html.replace(/xtagendz/g, '>');
+        var $wrapper = this.utils.buildWrapper(html);
 
-        var encoded = this.decodeEntities(html);
-        node.textContent = this._encodeNodeHtml(encoded);
-    },
-    _encodeNodeHtml: function(html) {
-        html = html.replace(/&nbsp;/g, ' ').replace(/<br\s?\/?>/g, '\n');
-        html = (this.opts.preSpaces) ? html.replace(/\t/g, new Array(this.opts.preSpaces + 1).join(' ')) : html;
+        $wrapper.find('code code').replaceWith(this._encodeOuter.bind(this));
+        $wrapper.find('code pre').replaceWith(this._encodeOuter.bind(this));
+        $wrapper.find('pre pre').replaceWith(this._encodeOuter.bind(this));
+        $wrapper.find('code, pre').each(this._encodePreCodeLine.bind(this));
+
+        html = this.utils.getWrapperHtml($wrapper);
+
+        // restore markers
+        html = this._decodeMarkers(html);
 
         return html;
     },
-
     encodeEntities: function(str)
     {
         str = this.decodeEntities(str);
@@ -6493,6 +6434,26 @@ $R.add('service', 'cleaner', {
         }
 
         return html;
+    },
+    _decodeMarkers: function(html)
+    {
+        var decodedMarkers = '<span id="selection-marker-$1" class="redactor-selection-marker">​</span>';
+        return html.replace(/&lt;span\sid="selection-marker-(start|end)"\sclass="redactor-selection-marker"&gt;(.*?[^>]?)&lt;\/span&gt;/g, decodedMarkers);
+    },
+    _encodeOuter: function(node)
+    {
+        return this.encodeEntities(node.outerHTML);
+    },
+    _encodePreCodeLine: function(node)
+    {
+        var first = node.firstChild;
+        if (node.tagName == 'PRE' && (first && first.tagName === 'CODE')) return;
+
+        var encoded = this.decodeEntities(node.innerHTML);
+        encoded = encoded.replace(/&nbsp;/g, ' ').replace(/<br\s?\/?>/g, '\n');
+        encoded = (this.opts.preSpaces) ? encoded.replace(/\t/g, new Array(this.opts.preSpaces + 1).join(' ')) : encoded;
+
+        node.textContent = encoded;
     }
 });
 $R.add('class', 'cleaner.figure', {
@@ -6826,11 +6787,11 @@ $R.add('class', 'cleaner.paragraphize', {
         this.app = app;
         this.opts = app.opts;
         this.utils = app.utils;
-        this.cleaner = app.cleaner;
         this.element = app.element;
 
         // local
         this.stored = [];
+        this.storedComments = [];
         this.remStart = '#####replace';
         this.remEnd = '#####';
         this.paragraphizeTags = ['table', 'div', 'pre', 'form', 'ul', 'ol', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'dl', 'blockquote', 'figcaption',
@@ -6856,9 +6817,7 @@ $R.add('class', 'cleaner.paragraphize', {
 
         // store
         html = this._storeTags(html);
-
-        var storedComments = [];
-        html = this.cleaner.storeComments(html, storedComments);
+        html = this._storeComments(html);
 
         // trim
         html = html.trim();
@@ -6873,8 +6832,6 @@ $R.add('class', 'cleaner.paragraphize', {
         if (this.opts.breakline) {
             html = html.replace(/<br\s?\/?>(?:\r\n|\r|\n)/gi, 'xbreakmarkerz\n');
             html = html.replace(/<br\s?\/?>/gi, 'xbreakmarkerz\n');
-            html = html.replace(/xbreakmarkerz\n<\//gi, 'xbreakmarkerz</');
-
         }
         else {
             html = html.replace(/[\n]+/g, "\n");
@@ -6899,15 +6856,15 @@ $R.add('class', 'cleaner.paragraphize', {
 
         // restore
         html = this._restoreTags(html);
-        html = this.cleaner.restoreComments(html, storedComments);
+        html = this._restoreComments(html);
 
         // remove empty
         if (this.opts.breakline) {
             html = html.replace(new RegExp('<' + tag + '></' + tag + '>', 'gi'), '<' + tag + '><br></' + tag + '>');
         }
         else {
-            //html = html.replace(new RegExp('<' + tag + '><br\\s?/?></' + tag + '>', 'gi'), '');
-            //html = html.replace(new RegExp('<' + tag + '></' + tag + '>', 'gi'), '');
+            html = html.replace(new RegExp('<' + tag + '><br\\s?/?></' + tag + '>', 'gi'), '');
+            html = html.replace(new RegExp('<' + tag + '></' + tag + '>', 'gi'), '');
         }
 
         // clean restored
@@ -6941,10 +6898,28 @@ $R.add('class', 'cleaner.paragraphize', {
 
         return this.utils.getWrapperHtml($wrapper);
     },
+    _storeComments: function(html) {
+        var comments = html.match(new RegExp('<!--([\\w\\W]*?)-->', 'gi'));
+        if (comments !== null) {
+            for (var i = 0; i < comments.length; i++) {
+                html = html.replace(comments[i], '#####xstarthtmlcommentzz' + i + 'xendhtmlcommentzz#####');
+                this.storedComments.push(comments[i]);
+            }
+        }
+
+        return html;
+    },
     _restoreTags: function(html) {
         for (var i = 0; i < this.stored.length; i++) {
             this.stored[i] = this.stored[i].replace(/\$/g, '&#36;');
             html = html.replace(this.remStart + i + this.remEnd, this.stored[i]);
+        }
+
+        return html;
+    },
+    _restoreComments: function(html) {
+        for (var i = 0; i < this.storedComments.length; i++) {
+            html = html.replace('#####xstarthtmlcommentzz' + i + 'xendhtmlcommentzz#####', this.storedComments[i]);
         }
 
         return html;
@@ -8097,11 +8072,6 @@ $R.add('service', 'insertion', {
 
             fragment = this.utils.createFragment(parsedInput.html);
 
-            var range = this.selection.getRange();
-            if (range && this.selection.isCollapsed()) {
-                range.deleteContents();
-            }
-
             this.utils.splitNode(current, fragment);
             this.caret.setEnd(fragment.last);
 
@@ -8510,6 +8480,7 @@ $R.add('service', 'block', {
 
         nodes = this._replaceBlocks(blocks, replacedTag);
 
+
         // apply args & clean
         nodes = this._buildNodes(nodes);
 
@@ -8670,11 +8641,6 @@ $R.add('service', 'block', {
             // remove all inlines in pre
             else if (tag === 'pre') {
                 $node.find(tags.join(',')).not('.redactor-selection-marker').unwrap();
-            }
-
-
-            if (this.params.args === false && this.params.tag === 'p') {
-                $node.removeAttr('class');
             }
 
             // breakline attr
@@ -9441,7 +9407,6 @@ $R.add('service', 'autoparser', {
     init: function(app)
     {
         this.app = app;
-        this.cleaner = this.app.cleaner;
     },
     observe: function()
     {
@@ -9488,16 +9453,8 @@ $R.add('service', 'autoparser', {
         var stored = [];
         var z = 0;
 
-        // store
-        var storedComments = [];
-        html = this.cleaner.storeComments(html, storedComments);
-
         // encode
-        html = this.cleaner.encodeCode(html);
-
-        // converting entity
-        html = html.replace(/\$/g, '&#36;');
-        html = html.replace(/&amp;/g, '&');
+        html = this.cleaner.encodePreCode(html);
 
         // store tags
         for (var i = 0; i < tags.length; i++)
@@ -9577,9 +9534,6 @@ $R.add('service', 'autoparser', {
 
         // repeat for nested tags
         html = this._restoreReplaced(stored, html);
-
-        // restore comments
-        html = this.cleaner.restoreComments(html, storedComments);
 
         return html;
     },
@@ -10991,7 +10945,6 @@ $R.add('class', 'editor.events', {
             return;
         }
 
-
         if (this.app.isDragComponentInside())
         {
             var $dragComponent = $R.dom(this.app.getDragComponentInside());
@@ -11307,7 +11260,6 @@ $R.add('module', 'source', {
         // started content
         var startContent = this.cleaner.input(sourceContent, true, true);
         var syncContent = this.cleaner.output(startContent);
-
 
         // set content
         $editor.html(startContent);
@@ -11636,12 +11588,10 @@ $R.add('module', 'clicktoedit', {
     },
     onenablereadonly: function()
     {
-        if (!this.opts.clickToEdit) return;
         if (!this._isEnabled()) this.stop();
     },
     ondisablereadonly: function()
     {
-        if (!this.opts.clickToEdit) return;
         if (!this._isEnabled()) this.start();
     },
     onstop: function()
@@ -13590,7 +13540,6 @@ $R.add('module', 'modal', {
         if (this.selectionMarkers) this.selection.restoreMarkers();
         else this.selection.restore();
 
-
         this.selectionMarkers = false;
 
         this._broadcast('close');
@@ -15230,10 +15179,6 @@ $R.add('class', 'input.enter', {
             e.preventDefault();
             return this.insertion.insertBreakLine();
         }
-        // list
-        else if (data.isList()) {
-            return;
-        }
         // div / p
         else
         {
@@ -15311,7 +15256,6 @@ $R.add('class', 'input.enter', {
 
         if (this.opts.breakline && block && block.tagName === 'DIV')
         {
-            $block.append(document.createElement('br'));
             $block.attr('data-redactor-tag', 'br');
         }
     },
@@ -15362,7 +15306,7 @@ $R.add('class', 'input.paste', {
         var dataCurrent = this.inspector.parse(current);
 
         this.dropPasted = this.dataTransfer;
-        this.isRawCode = (this.dropPasted) ? (dataCurrent.isPre() || dataCurrent.isCode()) : this._isPlainText(clipboard);
+        this.isRawCode = (dataCurrent.isPre() || dataCurrent.isCode());
 
         this.editor.enablePasting();
         this.editor.saveScroll();
@@ -15397,7 +15341,7 @@ $R.add('class', 'input.paste', {
         {
             // html / text
             var url = clipboard.getData('URL');
-            var html = (this._isPlainText(clipboard)) ? this.cleaner.encodeEntities(clipboard.getData("text/plain")) : clipboard.getData("text/html");
+            var html = (this._isPlainText(clipboard)) ? clipboard.getData("text/plain") : clipboard.getData("text/html");
 
             // safari anchor links
             html = (!url || url === '') ? html : url;
@@ -15475,9 +15419,6 @@ $R.add('class', 'input.paste', {
         // stop input
         if (!this.opts.input) return;
 
-        this.app.broadcast('state', false);
-
-        // insert
         var nodes = [];
         if (this.isRawCode) {
             var textNode = document.createTextNode(html)
@@ -15499,7 +15440,6 @@ $R.add('class', 'input.paste', {
             this.app.broadcast('pasted', nodes);
             this.app.broadcast('autoparseobserve');
         }
-
     },
     _insertFiles: function(e, files)
     {
@@ -16956,7 +16896,6 @@ $R.add('class', 'image.component', {
                 break;
                 case 'center':
                     textAlign = 'center';
-                    imageMargin = 'auto';
                 break;
             }
 
@@ -17136,8 +17075,6 @@ $R.add('class', 'image.resize', {
     {
         this.$target.find('#redactor-image-resizer').remove();
 
-        if (this.app.isReadOnly()) return;
-
         var data = this.inspector.parse(e.target);
         var $editor = this.editor.getElement();
 
@@ -17231,9 +17168,8 @@ $R.add('class', 'image.resize', {
             this.resizeHandle.$figure.css('max-width', width + 'px');
         }
 
-        this.resizeHandle.el.attr({ width: width, height: height });
+        this.resizeHandle.el.attr({width: width, height: height});
         this.resizeHandle.el.width(width);
-        this.resizeHandle.el.css('max-width', width + 'px');
         this.resizeHandle.el.height(height);
         this._setResizerPosition();
     },
@@ -17621,10 +17557,6 @@ $R.add('module', 'buffer', {
 
         this.passed = false;
         this._saveState(html, offset);
-
-        if (e === false) {
-            this._setUndo();
-        }
     },
     onenable: function()
     {
@@ -17654,7 +17586,6 @@ $R.add('module', 'buffer', {
     // private
     _saveState: function(html, offset)
     {
-
         var $editor = this.editor.getElement();
 
         this.state = {
@@ -17750,7 +17681,6 @@ $R.add('module', 'buffer', {
 
         $editor.html(buffer[0]);
         this.offset.set(buffer[1]);
-        this._saveState(buffer[0], buffer[1]);
         this.selection.restore();
 
         this.app.broadcast('undo', buffer[0], buffer[1]);
@@ -17768,7 +17698,6 @@ $R.add('module', 'buffer', {
         this._setUndo();
         $editor.html(buffer[0]);
         this.offset.set(buffer[1]);
-        this._saveState(buffer[0], buffer[1]);
 
         this.app.broadcast('redo', buffer[0], buffer[1]);
     },

@@ -26,39 +26,32 @@
 		},
 
 		// private
-		_expand: function(e)
-		{
-            var key = e.which;
-			if (key === this.keycodes.SPACE)
-			{
-    			var len = this.opts.textexpander.length;
-                for (var i = 0; i < len; i++)
-                {
-                    var str = this.opts.textexpander[i];
-    			    var re = new RegExp(this.utils.escapeRegExp(str[0]) + '\\s$');
-                    var rangeText = this.selection.getTextBeforeCaret(str[0].length + 1).replace(/\s$/, '');
-
-    			    if (str[0] === rangeText)
-    			    {
-        			    return this._replaceSelection(re, str[1]);
-    			    }
-
-                }
+		_expand: function(e) {
+      var key = e.which;
+			if (key === this.keycodes.SPACE) {
+  			var len = this.opts.textexpander.length;
+        for (var i = 0; i < len; i++) {
+          var str = this.opts.textexpander[i];
+			    var re = new RegExp(this.utils.escapeRegExp(str[0]) + '\\s$');
+          var rangeText = this.selection.getTextBeforeCaret(str[0].length + 1).replace(/\s$/, '');
+			    if (str[0] === rangeText) {
+    			  return this._replaceSelection(re, str[1]);
+			    }
+        }
 			}
 		},
-		_replaceSelection: function(re, replacement)
-		{
-    		var marker = this.marker.insert('start');
-            var current = marker.previousSibling;
-            var currentText = current.textContent;
+		_replaceSelection: function(re, replacement) {
+      var marker = this.marker.insert('start');
+      var current = marker.previousSibling;
+      var currentText = current.textContent;
 
-            currentText = currentText.replace(/&nbsp;/, ' ');
-        	currentText = currentText.replace(re, replacement);
-        	current.textContent = currentText;
+      currentText = currentText.replace(/&nbsp;/, ' ');
+      currentText = currentText.replace(re, replacement);
+      current.textContent = currentText;
 
- 			this.selection.restoreMarkers();
+      this.selection.restoreMarkers();
 
-            return;
-		}
-    });
+      return;
+		 }
+  });
 })(Redactor);
