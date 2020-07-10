@@ -138,6 +138,7 @@ export default class Editor extends React.Component {
       toolbarFixed: true,
       tabAsSpaces: 2, // currently the only way tab works is if you use spaces. Traditional doesnt work
       tabKey: true,
+      linkSize: 20000,
       buttonsAdd: ['filesafe'],
       buttons: [
         'bold', 'italic', 'underline', 'deleted', 'format', 'fontsize', 'fontfamily',
