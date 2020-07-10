@@ -2,7 +2,7 @@ const webpack = require('webpack');
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
   mode: 'production',
@@ -21,7 +21,16 @@ module.exports = {
     path.resolve(__dirname, 'app/stylesheets/main.scss'),
   ],
   optimization: {
-    minimizer: [new UglifyJsPlugin()],
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          compress: {
+            warnings: false,
+          },
+        },
+      }),
+    ],
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -30,7 +39,11 @@ module.exports = {
   },
   module: {
     rules: [
-      { test: /\.css$/, include: path.resolve(__dirname, 'app'), loader: 'style-loader!css-loader' },
+      { 
+        test: /\.css$/,
+        include: path.resolve(__dirname, 'app'),
+        loader: 'style-loader!css-loader'
+      },
       {
         test: /\.scss$/,
         exclude: /node_modules/,
@@ -45,9 +58,14 @@ module.exports = {
           'sass-loader',
         ],
       },
-      { test: /\.js[x]?$/, include: [
-        path.resolve(__dirname, 'app'),
-      ], exclude: /node_modules/, loader: 'babel-loader' },
+      {
+        test: /\.js[x]?$/,
+        include: [
+          path.resolve(__dirname, 'app'),
+        ], 
+        exclude: /node_modules/,
+        loader: 'babel-loader'
+      },
     ],
   },
   resolve: {
@@ -58,7 +76,6 @@ module.exports = {
   },
   plugins: [
     new MiniCssExtractPlugin({ filename: './app.css'}),
-    new UglifyJsPlugin({}),
     new CopyWebpackPlugin({
       patterns: [
         { from: './app/index.html', to: 'index.html' },
