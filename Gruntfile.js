@@ -43,8 +43,6 @@ module.exports = function(grunt) {
 
   });
 
-  grunt.loadNpmTasks('grunt-newer');
-  grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-terser');
   grunt.loadNpmTasks('grunt-contrib-concat');
 
