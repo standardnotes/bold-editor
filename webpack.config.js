@@ -1,11 +1,12 @@
-const webpack = require('webpack');
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
   mode: 'production',
+  performance: {
+    hints: false,
+  },
   devServer: {
     contentBase: path.join(__dirname, 'dist'),
     hot: false,
@@ -20,18 +21,6 @@ module.exports = {
     path.resolve(__dirname, 'app/main.js'),
     path.resolve(__dirname, 'app/stylesheets/main.scss'),
   ],
-  optimization: {
-    minimize: true,
-    minimizer: [
-      new TerserPlugin({
-        terserOptions: {
-          compress: {
-            warnings: false,
-          },
-        },
-      }),
-    ],
-  },
   output: {
     path: path.resolve(__dirname, 'dist'),
     publicPath: '/',
