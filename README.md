@@ -38,7 +38,7 @@ Get a full working copy of the editor (with FileSafe) for development.
 
 ## Development with webpack Watch Mode (recommended)
 
-Start by following the instructions here: https://docs.standardnotes.org/extensions/local-setup
+Start by following the instructions here: https://docs.standardnotes.org/extensions/local-setup. Included in the repository is an `ext.json.sample` file that can be used in the setup.
 
 This will setup a local server from which the bold-editor can be imported via the desktop app or the web app. You should be able to use the bold-editor now.
 
