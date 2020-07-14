@@ -4,29 +4,6 @@ The Bold Editor is a Standard Notes derived editor that offers text formatting a
 
 ![Over 21 different text formatting features are available.](editor_bar.png)
 
-## Quickstart
-
-Quickly see the editor in action via the browser. Note that FileSafe integration is not supported.  
-
-1. Clone the [bold-editor](https://github.com/standardnotes/bold-editor) repository from GitHub.
-   
-2. Run `npm install` to install required dependencies.
-   
-3. Edit `app/index.html` for use locally:
-   - comment out lines under 'Production'
-   - uncomment lines under 'Development'
-
-    ```html
-    <!-- Development -->
-    <script type="text/javascript" src="redactor.min.js"></script>
-    <script type="text/javascript" src="app.min.js"></script>
-
-    <!-- Production -->
-    <!--<script type="text/javascript" src="dist.min.js"></script>-->
-    ```
-
-5. Use the webpack-dev-server via `npm run start` and open the browser to visit `localhost:8080` where the app will be running.
-
 ## Local Installation
 
 Get a full working copy of the editor (with FileSafe) for development. 
@@ -40,17 +17,26 @@ Get a full working copy of the editor (with FileSafe) for development.
     "filesafe-embed": "~/folder_with_both_repositories/filesafe-embed",
     ```
 
-4. Run `npm install` in both the `bold-editor` and `filesafe-embed` folders to install the required dependencies. 
-   - If there are errors, delete the `package-lock.json` file and `node_modules` folder. Then run `npm install` again. This is equivalent to "turning it off and on again" for npm. ([source](https://stackoverflow.com/questions/48298361/npm-install-failed-at-the-node-sass4-5-0-postinstall-script))
+4. Run `npm i` in both the `bold-editor` and `filesafe-embed` folders to install the required dependencies. 
+   - If there are errors, delete the `package-lock.json` file and `node_modules` folder. Then run `npm i` again. ([source](https://stackoverflow.com/questions/48298361/npm-install-failed-at-the-node-sass4-5-0-postinstall-script))
 
-5. Edit `index.html` for use locally:
+5. Edit `app/index.html` for use locally:
    - comment out lines under 'Production'
    - uncomment lines under 'Development'
 
-6. Run `npm install -g http-server` to install a simple local server to host the extension.
+   ```html
+   <!-- Development -->
+   <script type="text/javascript" src="redactor.min.js"></script>
+   <script type="text/javascript" src="app.min.js"></script>
+
+   <!-- Production -->
+   <!--<script type="text/javascript" src="dist.min.js"></script>-->
+   ```
+6. Run `npm run build` to build the files.
+6. Run `npm i -g http-server` to install a simple local server to host the extension.
 7. Choose between webpack Watch Mode and webpack-dev-server for development and follow the corresponding instructions.
 
-## Development with webpack Watch Mode
+## Development with webpack Watch Mode (recommended)
 
 Start by following the instructions here: https://docs.standardnotes.org/extensions/local-setup
 
