@@ -34,15 +34,7 @@ export default class Editor extends React.Component {
         for(let attribute of element.attributes) {
           newElement.setAttribute(attribute.nodeName, attribute.nodeValue);
         }
-
-        if(newElement.tagName != element.tagName) {
-          // In this case, our element was wrapped in some other element.
-          // For example, if element.tagName is 'img', it will be wrapped in a 'figure' element.
-          // If it's 'video', it will not be wrapped at all
-          newElement.setAttribute("ghost", true);
-          newElement.removeAttribute("fscollapsable");
-        }
-
+        
         return newElement;
       },
       insertElement: (element, inVicinityOfElement, insertionType) => {
