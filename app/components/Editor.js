@@ -28,7 +28,7 @@ export default class Editor extends React.Component {
     // easier to build editors. As such, it very general and does not know
     // how the functions are implemented, just that they are needed. It is
     // up to the Bold Editor wrapper to implement these important functions.
-    let delegate = new EditorKitDelegate({
+    const delegate = new EditorKitDelegate({
       insertRawText: (rawText) => {
         this.redactor.insertion.insertHtml(rawText);
       },
@@ -36,11 +36,11 @@ export default class Editor extends React.Component {
         // Convert inserting element to format Redactor wants.
         // This will wrap img elements, for example, in a figure element.
         // We also want to copy over attributes
-        let cleaned = this.redactor.cleaner.input(element.outerHTML);
-        let newElement = $R.dom(cleaned).nodes[0];
+        const cleaned = this.redactor.cleaner.input(element.outerHTML);
+        const newElement = $R.dom(cleaned).nodes[0];
 
 
-        for (let attribute of element.attributes) {
+        for (const attribute of element.attributes) {
           newElement.setAttribute(attribute.nodeName, attribute.nodeValue);
         }
 
@@ -76,16 +76,16 @@ export default class Editor extends React.Component {
       getCurrentLineText: () => {
         // Returns the node where the cursor currently is. Typically a
         // paragraph if no formatter, otherwise the closest formatted element.
-        let node = this.redactor.selection.getCurrent();
+        const node = this.redactor.selection.getCurrent();
         return node.textContent;
       },
       getPreviousLineText: () => {
-        let currentElement = this.redactor.selection.getElement();
-        let previousSibling = currentElement.previousSibling;
+        const currentElement = this.redactor.selection.getElement();
+        const previousSibling = currentElement.previousSibling;
         return previousSibling && previousSibling.textContent;
       },
       replaceText: ({regex, replacement, previousLine}) => {
-        let marker = this.redactor.marker.insert('start');
+        const marker = this.redactor.marker.insert('start');
         let node;
         if (previousLine) {
           node = this.redactor.selection.getElement().previousSibling;
@@ -120,7 +120,7 @@ export default class Editor extends React.Component {
         $R('#editor', 'module.buffer.clear');
       },
       setEditorRawText: (rawText) => {
-        let cleaned = this.redactor.cleaner.input(rawText);
+        const cleaned = this.redactor.cleaner.input(rawText);
         $R('#editor', 'source.setCode', cleaned);
       }
     });
@@ -138,7 +138,7 @@ export default class Editor extends React.Component {
     // We need to set this as a window variable so that the filesafe plugin
     // can interact with this object passing it as an opt for some reason
     // strips any functions off the objects.
-    let filesafeInstance = await this.editorKit.getFilesafe();
+    const filesafeInstance = await this.editorKit.getFilesafe();
     window.filesafe_params = {
       embed: FilesafeEmbed,
       client: filesafeInstance
@@ -189,7 +189,7 @@ export default class Editor extends React.Component {
     });
 
     this.redactor.editor.getElement().on('keyup.textsearcher', (event) => {
-      let key = event.which;
+      const key = event.which;
       this.editorKit.onEditorKeyUp({
         key,
         isSpace: key == this.redactor.keycodes.SPACE,
@@ -208,7 +208,7 @@ export default class Editor extends React.Component {
       this.redactor.plugin.filesafe.open();
       return;
     }
-    for (let file of files) {
+    for (const file of files) {
       // Observers in EditorKitInternal.js will handle successful upload
       this.editorKit.uploadJSFileObject(file).then((descriptor) => {
         if (!descriptor || !descriptor.uuid) {
