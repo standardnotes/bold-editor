@@ -1,9 +1,14 @@
 import React from 'react';
 import FilesafeEmbed from "filesafe-embed";
-import {EditorKit, EditorKitDelegate} from "sn-editor-kit";
+import {
+  EditorKit,
+  EditorKitDelegate
+} from "sn-editor-kit";
 
-// Not used directly here, but required to be imported so that it is included in dist file.
-// Note that filesafe-embed also imports filesafe-js, but conditionally, so its not included in its own dist files.
+// Not used directly here, but required to be imported so that it is included
+// in dist file.
+// Note that filesafe-embed also imports filesafe-js, but conditionally, so
+// it's not included in it's own dist files.
 import Filesafe from "filesafe-js";
 
 export default class Editor extends React.Component {
@@ -19,6 +24,10 @@ export default class Editor extends React.Component {
   }
 
   configureEditorKit() {
+    // EditorKit is a wrapper on top of the component manager to make it
+    // easier to build editors. As such, it very general and does not know
+    // how the functions are implemented, just that they are needed. It is
+    // up to the Bold Editor wrapper to implement these important functions.
     let delegate = new EditorKitDelegate({
       insertRawText: (rawText) => {
         this.redactor.insertion.insertHtml(rawText);
@@ -31,27 +40,30 @@ export default class Editor extends React.Component {
         let newElement = $R.dom(cleaned).nodes[0];
 
 
-        for(let attribute of element.attributes) {
+        for (let attribute of element.attributes) {
           newElement.setAttribute(attribute.nodeName, attribute.nodeValue);
         }
-        
+
         return newElement;
       },
       insertElement: (element, inVicinityOfElement, insertionType) => {
-        // When inserting elements via dom manipulation, it doesnt update the source code view.
-        // So when you insert this element, open the code view, and close it, the element will be gone.
-        // The only way it works is if we use the proper redactor.insertion API, but I haven't found a good
-        // way to use that API for inserting text at a given position. There is 'insertToOffset', but
-        // where offset is the index of the plaintext, but I haven't found a way to map the adjacentTo
-        // element to a plaintext offset. So for now this bug will persist.
+        // When inserting elements via dom manipulation, it doesnt update the
+        // source code view. So when you insert this element, open the code
+        // view, and close it, the element will be gone. The only way it works
+        // is if we use the proper redactor.insertion API, but I haven't found
+        // a good way to use that API for inserting text at a given position.
+        // There is 'insertToOffset', but where offset is the index of the
+        // plaintext, but I haven't found a way to map the adjacentTo element 
+        // to a plaintext offset. So for now this bug will persist.
 
         // insertionType can be either 'afterend' or 'child'
 
-        if(inVicinityOfElement) {
-          if(insertionType == "afterend") {
+        if (inVicinityOfElement) {
+          if (insertionType == "afterend") {
             inVicinityOfElement.insertAdjacentElement('afterend', element);
-          } else if(insertionType == "child") {
-            // inVicinityOfElement.appendChild(element) doesn't work for some reason when inserting videos.
+          } else if (insertionType == "child") {
+            // inVicinityOfElement.appendChild(element) doesn't work for some
+            // reason when inserting videos.
             inVicinityOfElement.after(element);
           }
         } else {
@@ -62,7 +74,8 @@ export default class Editor extends React.Component {
         return this.redactor.editor.getElement().find(selector).nodes;
       },
       getCurrentLineText: () => {
-        // Returns the node where the cursor currently is. Typically a paragraph if no formatter, otherwise the closest formatted element
+        // Returns the node where the cursor currently is. Typically a
+        // paragraph if no formatter, otherwise the closest formatted element.
         let node = this.redactor.selection.getCurrent();
         return node.textContent;
       },
@@ -74,14 +87,15 @@ export default class Editor extends React.Component {
       replaceText: ({regex, replacement, previousLine}) => {
         let marker = this.redactor.marker.insert('start');
         let node;
-        if(previousLine) {
+        if (previousLine) {
           node = this.redactor.selection.getElement().previousSibling;
         } else {
           node = marker.previousSibling;
         }
 
-        // If we're searching the previous line, previousSibling may sometimes be null
-        if(!node) {
+        // If we're searching the previous line, previousSibling may sometimes
+        // be null.
+        if (!node) {
           return;
         }
 
@@ -90,7 +104,7 @@ export default class Editor extends React.Component {
         // We'll add in our actual replacement as a new element
         nodeText = nodeText.replace(/&nbsp;/, ' ');
         nodeText = nodeText.replace(regex, '').replace(/\s$/, '').trim();
-        if(nodeText.length == 0) {
+        if (nodeText.length == 0) {
           node.remove();
         } else {
           node.textContent = nodeText;
@@ -121,23 +135,34 @@ export default class Editor extends React.Component {
   }
 
   async configureEditor() {
-    // We need to set this as a window variable so that the filesafe plugin can interact with this object
-    // passing it as an opt for some reason strips any functions off the objects
+    // We need to set this as a window variable so that the filesafe plugin
+    // can interact with this object passing it as an opt for some reason
+    // strips any functions off the objects.
     let filesafeInstance = await this.editorKit.getFilesafe();
-    window.filesafe_params = {embed: FilesafeEmbed, client: filesafeInstance};
+    window.filesafe_params = {
+      embed: FilesafeEmbed,
+      client: filesafeInstance
+    };
     this.redactor = $R('#editor', {
       styles: true,
       toolbarFixed: true,
-      tabAsSpaces: 2, // currently the only way tab works is if you use spaces. Traditional doesnt work
+      tabAsSpaces: 2, // currently tab only works if you use spaces.
       tabKey: true,
       linkSize: 20000,
       buttonsAdd: ['filesafe'],
       buttons: [
-        'bold', 'italic', 'underline', 'deleted', 'format', 'fontsize', 'fontfamily',
-        'fontcolor', 'filesafe', 'link', 'lists', 'alignment',
-        'line', 'redo', 'undo', 'indent', 'outdent', 'textdirection', 'html'],
-      plugins: ['filesafe', 'fontsize', 'fontfamily', 'fontcolor', 'alignment', 'table', 'inlinestyle', 'textdirection'],
-      fontfamily: ['Arial', 'Helvetica', 'Georgia', 'Times New Roman', 'Trebuchet MS', 'Monospace'],
+        'bold', 'italic', 'underline', 'deleted', 'format', 'fontsize',
+        'fontfamily', 'fontcolor', 'filesafe', 'link', 'lists', 'alignment',
+        'line', 'redo', 'undo', 'indent', 'outdent', 'textdirection', 'html'
+      ],
+      plugins: [
+        'filesafe', 'fontsize', 'fontfamily', 'fontcolor', 'alignment',
+        'table', 'inlinestyle', 'textdirection'
+      ],
+      fontfamily: [
+        'Arial', 'Helvetica', 'Georgia', 'Times New Roman', 'Trebuchet MS',
+        'Monospace'
+      ],
       callbacks: {
         changed: (html) => {
           // I think it's already cleaned so we don't need to do this.
@@ -149,7 +174,8 @@ export default class Editor extends React.Component {
         },
         image: {
           resized: (image) => {
-            // Don't need to do anything, as it changes the underlying html which triggers save event
+            // Don't need to do anything, as it changes the underlying html
+            // which triggers save event
           }
         }
       },
@@ -177,15 +203,15 @@ export default class Editor extends React.Component {
   }
 
   onEditorFilesDrop(files) {
-    if(!this.editorKit.canUploadFiles()) {
+    if (!this.editorKit.canUploadFiles()) {
       // Open filesafe modal
       this.redactor.plugin.filesafe.open();
       return;
     }
-    for(let file of files) {
-      // Observers will handle successful upload
+    for (let file of files) {
+      // Observers in EditorKitInternal.js will handle successful upload
       this.editorKit.uploadJSFileObject(file).then((descriptor) => {
-        if(!descriptor || !descriptor.uuid) {
+        if (!descriptor || !descriptor.uuid) {
           // alert("File failed to upload. Please try again");
         }
       })
