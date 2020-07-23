@@ -26,16 +26,8 @@ export default class Editor extends React.Component {
       preprocessElement: (element) => {
         // Convert inserting element to format Redactor wants.
         // This will wrap img elements, for example, in a figure element.
-        // We also want to copy over attributes
-        let cleaned = this.redactor.cleaner.input(element.outerHTML);
-        let newElement = $R.dom(cleaned).nodes[0];
-
-
-        for(let attribute of element.attributes) {
-          newElement.setAttribute(attribute.nodeName, attribute.nodeValue);
-        }
-        
-        return newElement;
+        const cleaned = this.redactor.cleaner.input(element.outerHTML);
+        return $R.dom(cleaned).nodes[0];
       },
       insertElement: (element, inVicinityOfElement, insertionType) => {
         // When inserting elements via dom manipulation, it doesnt update the source code view.
