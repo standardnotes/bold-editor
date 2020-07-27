@@ -35,10 +35,9 @@ export default class Editor extends React.Component {
       preprocessElement: (element) => {
         // Convert inserting element to format Redactor wants.
         // This will wrap img elements, for example, in a figure element.
-        // We also want to copy over attributes
+        // We also want to persist attributes from the inserting element.
         const cleaned = this.redactor.cleaner.input(element.outerHTML);
         const newElement = $R.dom(cleaned).nodes[0];
-
 
         for (const attribute of element.attributes) {
           newElement.setAttribute(attribute.nodeName, attribute.nodeValue);
@@ -174,8 +173,12 @@ export default class Editor extends React.Component {
         },
         image: {
           resized: (image) => {
-            // Don't need to do anything, as it changes the underlying html
-            // which triggers save event
+            // Underlying html will change, triggering save event.
+            // New img dimensions need to be copied over to figure element.
+            const img = image.nodes[0];
+            const fig = img.parentNode;
+            fig.setAttribute('width', img.getAttribute('width'));
+            fig.setAttribute('height', img.getAttribute('height'));
           }
         }
       },
