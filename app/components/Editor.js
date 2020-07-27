@@ -73,12 +73,15 @@ export default class Editor extends React.Component {
         return this.redactor.editor.getElement().find(selector).nodes;
       },
       getCurrentLineText: () => {
-        // Returns the node where the cursor currently is. Typically a
-        // paragraph if no formatter, otherwise the closest formatted element.
+        // Returns the text content of the node where the cursor currently is.
+        // Typically a paragraph if no formatter, otherwise the closest 
+        // formatted element.
         const node = this.redactor.selection.getCurrent();
         return node.textContent;
       },
       getPreviousLineText: () => {
+        // Returns the text content of the previous node, unless there is no
+        // previous node, in which case it returns the falsy value.
         const currentElement = this.redactor.selection.getElement();
         const previousSibling = currentElement.previousSibling;
         return previousSibling && previousSibling.textContent;
@@ -113,12 +116,15 @@ export default class Editor extends React.Component {
         this.redactor.selection.restoreMarkers();
       },
       onReceiveNote: (note) => {
-
+        // Empty
       },
       clearUndoHistory: () => {
+        // Called when switching notes to prevent history mixup.
         $R('#editor', 'module.buffer.clear');
       },
       setEditorRawText: (rawText) => {
+        // Called when the Bold Editor is loaded, when switching to a Bold
+        // Editor note, or when uploading files, maybe in more places too.
         const cleaned = this.redactor.cleaner.input(rawText);
         $R('#editor', 'source.setCode', cleaned);
       }
@@ -144,10 +150,10 @@ export default class Editor extends React.Component {
     };
     this.redactor = $R('#editor', {
       styles: true,
-      toolbarFixed: true,
+      toolbarFixed: true, // sticky toolbar
       tabAsSpaces: 2, // currently tab only works if you use spaces.
-      tabKey: true,
-      linkSize: 20000,
+      tabKey: true, // explicitly set tabkey for editor use, not for focus.
+      linkSize: 20000, // redactor default is 30, which truncates the link.
       buttonsAdd: ['filesafe'],
       buttons: [
         'bold', 'italic', 'underline', 'deleted', 'format', 'fontsize',
@@ -185,8 +191,9 @@ export default class Editor extends React.Component {
       imageEditable: false,
       imageCaption: false,
       imageLink: false,
-      imageResizable: true,
+      imageResizable: true, // requires image to be wrapped in a figure.
       imageUpload: (formData, files, event) => {
+        // Called when images are pasted from the clipboard too.
         this.onEditorFilesDrop(files);
       }
     });
@@ -201,7 +208,8 @@ export default class Editor extends React.Component {
     });
 
     // "Set the focus to the editor layer to the end of the content."
-    // Doesn't seem to currently work, focuses at the beginning.
+    // Doesn't work because setEditorRawText is called when loading a note and
+    // it doesn't save the caret location, so focuses to beginning.
     this.redactor.editor.endFocus();
   }
 
