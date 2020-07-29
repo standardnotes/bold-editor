@@ -26,21 +26,12 @@ export default class Editor extends React.Component {
       preprocessElement: (element) => {
         // Convert inserting element to format Redactor wants.
         // This will wrap img elements, for example, in a figure element.
-        // We also want to copy over attributes
-        let cleaned = this.redactor.cleaner.input(element.outerHTML);
-        let newElement = $R.dom(cleaned).nodes[0];
+        // We also want to persist attributes from the inserting element.
+        const cleaned = this.redactor.cleaner.input(element.outerHTML);
+        const newElement =  $R.dom(cleaned).nodes[0];
 
-
-        for(let attribute of element.attributes) {
+        for (let attribute of element.attributes) {
           newElement.setAttribute(attribute.nodeName, attribute.nodeValue);
-        }
-
-        if(newElement.tagName != element.tagName) {
-          // In this case, our element was wrapped in some other element.
-          // For example, if element.tagName is 'img', it will be wrapped in a 'figure' element.
-          // If it's 'video', it will not be wrapped at all
-          newElement.setAttribute("ghost", true);
-          newElement.removeAttribute("fscollapsable");
         }
 
         return newElement;
@@ -157,7 +148,12 @@ export default class Editor extends React.Component {
         },
         image: {
           resized: (image) => {
-            // Don't need to do anything, as it changes the underlying html which triggers save event
+            // Underlying html will change, triggering save event.
+            // New img dimensions need to be copied over to figure element.
+            const img = image.nodes[0];
+            const fig = img.parentNode;
+            fig.setAttribute('width', img.getAttribute('width'));
+            fig.setAttribute('height', img.getAttribute('height'));
           }
         }
       },
