@@ -75,7 +75,7 @@ export default class Editor extends React.Component {
       getCurrentLineText: () => {
         // Returns the text content of the node where the cursor currently is.
         // Typically a paragraph if no formatter, otherwise the closest 
-        // formatted element.
+        // formatted element, or null if there is no text content.
         const node = this.redactor.selection.getCurrent();
         return node.textContent;
       },
