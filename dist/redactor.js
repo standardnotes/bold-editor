@@ -1,11 +1,11 @@
 /*
     Redactor
-    Version 3.1.8
-    Updated: April 3, 2019
+    Version 3.4.2
+    Updated: July 17, 2020
 
     http://imperavi.com/redactor/
 
-    Copyright (c) 2009-2019, Imperavi Ltd.
+    Copyright (c) 2009-2020, Imperavi Ltd.
     License: http://imperavi.com/redactor/license/
 */
 (function() {
@@ -139,7 +139,7 @@ Dom.ready = function(fn)
 };
 
 Dom.prototype = {
-    get dom()
+    get sdom()
     {
         return true;
     },
@@ -156,7 +156,7 @@ Dom.prototype = {
         {
             nodes = [];
         }
-        else if (selector.dom)
+        else if (selector.sdom)
         {
             this.nodes = selector.nodes;
             return selector;
@@ -242,7 +242,7 @@ Dom.prototype = {
         var len = this.nodes.length;
         for (var i = 0; i < len; i++)
         {
-            callback.call(this, (this.nodes[i].dom) ? this.nodes[i].get() : this.nodes[i], i);
+            callback.call(this, (this.nodes[i].sdom) ? this.nodes[i].get() : this.nodes[i], i);
         }
 
         return this;
@@ -272,7 +272,7 @@ Dom.prototype = {
                 {
                     return (selector === node);
                 }
-                else if (selector && selector.dom)
+                else if (selector && selector.sdom)
                 {
                     return ((selector.nodes).indexOf(node) !== -1);
                 }
@@ -339,30 +339,26 @@ Dom.prototype = {
         context = this._getContext(context);
 
         var nodes = [];
-        this.each(function(node)
-        {
+        this.each(function(node) {
             var parent = node.parentNode;
-            while (parent && parent !== context)
-            {
-                if (selector)
-                {
+            while (parent && parent !== context) {
+                if (selector) {
                     if (new Dom(parent).is(selector)) { nodes.push(parent); }
                 }
-                else
-                {
+                else {
                     nodes.push(parent);
                 }
-
                 parent = parent.parentNode;
             }
         });
 
         return new Dom(nodes);
+
     },
     closest: function(selector, context)
     {
         context = this._getContext(context);
-        selector = (selector.dom) ? selector.get() : selector;
+        selector = (selector.sdom) ? selector.get() : selector;
 
         var nodes = [];
         var isNode = (selector && selector.nodeType);
@@ -591,10 +587,10 @@ Dom.prototype = {
             }
             else
             {
-                var elms = (frag instanceof Node) ? [frag] : this._toArray(frag).reverse();
-                for (var i = 0; i < elms.length; i++)
-                {
-                    node.parentNode.insertBefore(elms[i], node.nextSibling);
+                if (node.parentNode !== null) {
+                    for (var i = frag instanceof Node ? [frag] : this._toArray(frag).reverse(), s = 0; s < i.length; s++) {
+                        node.parentNode.insertBefore(i[s], node.nextSibling);
+                    }
                 }
             }
 
@@ -1010,7 +1006,7 @@ Dom.prototype = {
     {
         context = (typeof context === 'string') ? document.querySelector(context) : context;
 
-        return (context && context.dom) ? context.get() : (context || document);
+        return (context && context.sdom) ? context.get() : (context || document);
     },
     _inject: function(html, fn)
     {
@@ -1024,7 +1020,7 @@ Dom.prototype = {
 
             if (node)
             {
-                if (node.dom) nodes.push(node.get());
+                if (node.sdom) nodes.push(node.get());
                 else nodes.push(node);
             }
         }
@@ -1250,7 +1246,7 @@ Dom.prototype = {
     },
     _getSibling: function(selector, method)
     {
-        selector = (selector && selector.dom) ? selector.get() : selector;
+        selector = (selector && selector.sdom) ? selector.get() : selector;
 
         var isNode = (selector && selector.nodeType);
         var sibling;
@@ -1284,7 +1280,7 @@ Dom.prototype = {
         else if (obj === undefined) return [];
         else
         {
-            return (obj.dom) ? obj.nodes : obj;
+            return (obj.sdom) ? obj.nodes : obj;
         }
     },
     _toParams: function(obj)
@@ -1336,7 +1332,7 @@ var $R = function(selector, options)
 
 // Globals
 $R.app = [];
-$R.version = '3.1.8';
+$R.version = '3.4.2';
 $R.options = {};
 $R.modules = {};
 $R.services = {};
@@ -1649,7 +1645,8 @@ $R.opts = {
     imagePosition: false,
     imageResizable: false,
     imageFloatMargin: '10px',
-    imageFigure: false,
+    imageFigure: true,
+    imageObserve: true,
 
     // file
     fileUpload: false,
@@ -1667,7 +1664,7 @@ $R.opts = {
     // link
     linkTarget: false,
     linkTitle: false,
-    linkNewTab: false,
+    linkNewTab: true,
     linkNofollow: false,
     linkSize: 30,
     linkValidation: true,
@@ -1764,13 +1761,14 @@ $R.opts = {
     emptyHtml: '<p></p>',
     markerChar: '\ufeff',
     imageTypes: ['image/png', 'image/jpeg', 'image/gif'],
+    imageAttrs: ['alt', 'title', 'src', 'class', 'width', 'height', 'srcset'],
     inlineTags: ['a', 'span', 'strong', 'strike', 'b', 'u', 'em', 'i', 'code', 'del', 'ins', 'samp', 'kbd', 'sup', 'sub', 'mark', 'var', 'cite', 'small', 'abbr'],
     blockTags: ['pre', 'ul', 'ol', 'li', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',  'dl', 'dt', 'dd', 'div', 'table', 'tbody', 'thead', 'tfoot', 'tr', 'th', 'td', 'blockquote', 'output', 'figcaption', 'figure', 'address', 'section', 'header', 'footer', 'aside', 'article', 'iframe'],
     regex: {
         youtube: /https?:\/\/(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube\.com\S*[^\w\-\s])([\w\-]{11})(?=[^\w\-]|$)(?![?=&+%\w.-]*(?:['"][^<>]*>|<\/a>))[?=&+%\w.-]*/gi,
-        vimeo: /(http|https)?:\/\/(?:www.|player.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:[a-zA-Z0-9_-]+)?/gi,
+        vimeo: /(http|https)?:\/\/(?:www.|player.)?vimeo.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^\/]*)\/videos\/|album\/(?:\d+)\/video\/|video\/|)(\d+)(?:\/[a-zA-Z0-9_-]+)?/gi,
         imageurl: /((https?|www)[^\s]+\.)(jpe?g|png|gif)(\?[^\s-]+)?/gi,
-        url: /(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/gi
+        url: /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi
     },
     input: true,
     zindex: false,
@@ -3499,6 +3497,37 @@ $R.add('service', 'caret', {
         return node;
     }
 });
+var containsNode = function containsNode(node) {
+    return document.getSelection().containsNode(node, true);
+};
+
+if (!('containsNode' in Selection.prototype)) {
+    containsNode = containsNodePolyfill;
+}
+
+var containsNodePolyfill = function polyfill(node) {
+    var selection = document.getSelection();
+    var start = selection.anchorNode.parentNode;
+    var finalnode = selection.focusNode.parentNode;
+    var rectSelection = selection.getRangeAt(0).getBoundingClientRect();
+    var rectBlock = node.getBoundingClientRect();
+
+    if ($R.dom(start).closest(node).length) {
+        return true;
+    }
+
+    if ($R.dom(finalnode).closest(node).length) {
+        return true;
+    }
+
+    if (rectSelection.top < rectBlock.top && rectSelection.height > rectBlock.height) {
+        return true;
+    }
+
+    return false;
+};
+
+
 $R.add('service', 'selection', {
     init: function(app)
     {
@@ -4300,7 +4329,7 @@ $R.add('service', 'selection', {
         var filteredNodes = [];
         for (var i = 0; i < nodes.length; i++)
         {
-            if (window.getSelection().containsNode(nodes[i], true))
+            if (containsNode(nodes[i], true))
             {
                 filteredNodes.push(nodes[i]);
             }
@@ -4315,8 +4344,8 @@ $R.add('service', 'selection', {
         return (
             selected === text
             || text.search(selected) !== -1
-            || selected.search(new RegExp('^' + text)) !== -1
-            || selected.search(new RegExp(text + '$')) !== -1
+            || selected.search(new RegExp('^' + this.utils.escapeRegExp(text))) !== -1
+            || selected.search(new RegExp(this.utils.escapeRegExp(text) + '$')) !== -1
         );
     },
     _isInlineNode: function(node)
@@ -4429,6 +4458,10 @@ $R.add('service', 'editor', {
     saveScroll: function()
     {
         this.scrolltop = this._getScrollTarget().scrollTop();
+        if (this.opts.maxHeight) {
+            this.scrolltopin = this.$editor.scrollTop();
+        }
+
     },
     restoreScroll: function()
     {
@@ -4436,6 +4469,11 @@ $R.add('service', 'editor', {
         {
             this._getScrollTarget().scrollTop(this.scrolltop);
             this.scrolltop = false;
+        }
+
+        if (this.scrolltopin) {
+            this.$editor.scrollTop(this.scrolltopin);
+            this.scrolltopin = false;
         }
     },
 
@@ -4723,7 +4761,9 @@ $R.add('service', 'toolbar', {
         {
             observer = this.buttonsObservers[name];
             button = this.getButton(name);
-            this.app.broadcast('button.' + observer + '.observe', button);
+            if (!button.isDisabled()) {
+                this.app.broadcast('button.' + observer + '.observe', button);
+            }
         }
 
         // inline buttons
@@ -4741,7 +4781,9 @@ $R.add('service', 'toolbar', {
             if (tags.indexOf(key) !== -1)
             {
                 button = this.getButton(buttons[key]);
-                button.setActive();
+                if (button) {
+                    button.setActive();
+                }
             }
 
         }
@@ -4793,12 +4835,6 @@ $R.add('service', 'toolbar', {
 
         return ($btn.length !== 0) ? $btn.dataget('data-button-instance') : false;
     },
-    getButtonByIndex: function(index)
-    {
-        var $btn = this.$toolbar.find('.re-button').eq(index);
-
-        return ($btn.length !== 0) ? $btn.dataget('data-button-instance') : false;
-    },
     getButtons: function()
     {
         var buttons = [];
@@ -4827,27 +4863,10 @@ $R.add('service', 'toolbar', {
     {
         position = position || 'end';
 
-        var index = this._getButtonIndex(name);
         var $button = $R.create('toolbar.button', this.app, name, btnObj);
-
         if (btnObj.observe)
         {
             this.opts.activeButtonsObservers[name] = { observe: btnObj.observe, button: $button };
-        }
-
-        // api added
-        if (start !== true)
-        {
-            if (index === 0) position = 'first';
-            else if (index !== -1)
-            {
-                var $elm = this.getButtonByIndex(index-1);
-                if ($elm)
-                {
-                    position = 'after';
-                    $el = $elm;
-                }
-            }
         }
 
         if (this.is())
@@ -4927,12 +4946,6 @@ $R.add('service', 'toolbar', {
     },
 
     // private
-    _getButtonIndex: function(name)
-    {
-        var index = this.buttons.indexOf(name);
-
-        return (index === -1) ? false : index;
-    },
     _findButton: function(selector)
     {
         return (this.is()) ? this.$toolbar.find(selector) : $R.dom();
@@ -5250,7 +5263,7 @@ $R.add('class', 'toolbar.dropdown', {
         // local
         this.name = name;
         this.started = false;
-        this.items = items;
+        this.items = (name === 'format') ? $R.extend({}, true, items) : items;
         this.$items = [];
     },
     // public
@@ -5293,11 +5306,10 @@ $R.add('class', 'toolbar.dropdown', {
     getItemsByClass: function(classname)
     {
         var result = [];
-        for (var key in this.$items)
-        {
-            if (typeof this.$items[key] === 'object' && this.$items[key].hasClass(classname))
-            {
-                result.push(this.$items[key]);
+        for (var key in this.$items) {
+            var item = this.$items[key];
+            if (typeof item === 'object' && item.attr('data-re-name') && item.hasClass(classname)) {
+                result.push(item);
             }
         }
 
@@ -5354,22 +5366,45 @@ $R.add('class', 'toolbar.dropdown', {
     updatePosition: function()
     {
         var isFixed = this.toolbar.isFixed();
-        var pos = this.$btn.offset();
-        pos.top = (isFixed) ? this.$btn.position().top : pos.top;
+        var isTarget = this.toolbar.isTarget();
 
         var btnHeight = this.$btn.height();
         var btnWidth = this.$btn.width();
-        var position = (isFixed) ? 'fixed' : 'absolute';
-        var topOffset = (isFixed) ? (2 + this.opts.toolbarFixedTopOffset) : 2;
+
+        var pos = this.$btn.offset();
+        var position = 'absolute';
+        var topOffset = 2;
+
+        if (isFixed) {
+            pos.top = (isTarget) ? this.$btn.offset().top : this.$btn.position().top;
+            position = 'fixed';
+            topOffset = topOffset + this.opts.toolbarFixedTopOffset;
+        }
+
+
         var leftOffset = 0;
         var left = (pos.left + leftOffset);
         var width = parseFloat(this.css('width'));
         var winWidth = this.$win.width();
         var leftFix = (winWidth < (left + width)) ? (width - btnWidth) : 0;
         var leftPos = (left - leftFix);
+        var top = (pos.top + btnHeight + topOffset);
         leftPos = (leftPos < 0) ? 4 : leftPos;
 
-        this.css({ position: position, top: (pos.top + btnHeight + topOffset) + 'px', left: leftPos + 'px' });
+        this.css({
+            maxHeight: '',
+            position: position,
+            top: top + 'px',
+            left: leftPos + 'px'
+        });
+
+        // height adaptive
+        var heightTolerance = 10;
+        var winHeight = this.$win.height();
+        var scrollTop = this.$doc.scrollTop();
+        var cropHeight = winHeight - (top - scrollTop) - heightTolerance;
+
+        this.css('max-height', cropHeight + 'px');
     },
 
     // private
@@ -5382,7 +5417,7 @@ $R.add('class', 'toolbar.dropdown', {
 
         this.addClass('redactor-dropdown redactor-dropdown-' + this.uuid + ' redactor-dropdown-' + this.name);
         this.dataset('data-dropdown-instance', this);
-        var isDom = (this.items.dom || typeof this.items === 'string');
+        var isDom = (this.items.sdom || typeof this.items === 'string');
 
         if (isDom) this._buildDom();
         else this._buildItems();
@@ -5555,6 +5590,7 @@ $R.add('service', 'cleaner', {
 
         // local
         this.storedComponents = [];
+        this.storedComments = [];
         this.storedImages = [];
         this.storedLinks = [];
         this.deniedTags = ['font', 'html', 'head', 'link', 'title', 'body', 'meta', 'applet'];
@@ -5562,7 +5598,7 @@ $R.add('service', 'cleaner', {
         this.unconvertRules = {};
 
         // regex
-        this.reComments = /<!--[\s\S]*?-->/g;
+        this.reComments = /<!--[\s\S]*?-->\n?/g;
         this.reSpacedEmpty = /^(||\s||<br\s?\/?>||&nbsp;)$/i;
         this.reScriptTag = /<script(.*?[^>]?)>([\w\W]*?)<\/script>/gi;
     },
@@ -5577,8 +5613,30 @@ $R.add('service', 'cleaner', {
     },
     input: function(html, paragraphize, started)
     {
+        // store
+        var storedComments = [];
+        html = this.storeComments(html, storedComments);
+
         // pre/code
-        html = this.encodePreCode(html);
+        html = this.encodeCode(html);
+
+        // sanitize
+        var $wrapper = this.utils.buildWrapper(html);
+        $wrapper.find('img, svg, details').removeAttr('onload onerror ontoggle');
+        var imageattrs = ['alt', 'title', 'src', 'class', 'width', 'height', 'srcset', 'style', 'usemap'];
+        $wrapper.find('img').each(function(node) {
+            if (node.attributes.length > 0) {
+                var attrs = node.attributes;
+                for (var i = attrs.length - 1; i >= 0; i--) {
+                    if (attrs[i].name.search(/^data\-/) === -1 && imageattrs.indexOf(attrs[i].name) === -1) {
+                        node.removeAttribute(attrs[i].name);
+                    }
+                }
+            }
+        });
+
+        // get wrapper html
+        html = this.utils.getWrapperHtml($wrapper);
 
         // converting entity
         html = html.replace(/\$/g, '&#36;');
@@ -5596,8 +5654,8 @@ $R.add('service', 'cleaner', {
         html = this._setSpanAttr(html);
         html = this._setStyleCache(html);
         html = this.removeTags(html, this.deniedTags);
-        //html = (this.opts.removeScript) ? this._removeScriptTag(html) : this._replaceScriptTag(html);
-        html = (this.opts.removeScript) ? this._removeScriptTag(html) : html;
+        html = (this.opts.removeScript) ? this._removeScriptTag(html) : this._replaceScriptTag(html);
+        //html = (this.opts.removeScript) ? this._removeScriptTag(html) : html;
         html = (this.opts.removeComments) ? this.removeComments(html) : html;
         html = (this._isSpacedEmpty(html)) ? this.opts.emptyHtml : html;
 
@@ -5607,6 +5665,9 @@ $R.add('service', 'cleaner', {
         // clear wrapped components
         html = this._cleanWrapped(html);
 
+        // restore comments
+        html = this.restoreComments(html, storedComments);
+
         // paragraphize
         html = (paragraphize) ? this.paragraphize(html) : html;
 
@@ -5615,6 +5676,13 @@ $R.add('service', 'cleaner', {
     output: function(html, removeMarkers)
     {
         html = this.removeInvisibleSpaces(html);
+
+        if (this.opts.breakline) {
+            html = html.replace(/<\/(span|strong|b|i|em)><br\s?\/?><\/div>/gi, "</$1></div>");
+            html = html.replace(/<br\s?\/?><\/(span|strong|b|i|em)><\/div>/gi, "</$1></div>");
+        }
+
+        html = html.replace(/&#36;/g, '$');
 
         // empty
         if (this._isSpacedEmpty(html)) return '';
@@ -5647,6 +5715,12 @@ $R.add('service', 'cleaner', {
 
         // converting entity
         html = html.replace(/&amp;/g, '&');
+
+        // breakline tidy
+        if (this.opts.breakline) {
+            html = html.replace(/<br\s?\/?>/gi, "<br>\n");
+            html = html.replace(/<br\s?\/?>\n+/gi, "<br>\n");
+        }
 
         // check whitespaces
         html = (html.replace(/\n/g, '') === '') ? '' : html;
@@ -5695,6 +5769,27 @@ $R.add('service', 'cleaner', {
             return this.pastePlainText(html);
         }
 
+        // unconvert data redactor tag
+        var $wrapper = this.utils.buildWrapper(html);
+        $wrapper.find('*').removeAttr('style');
+        $wrapper.find('[data-redactor-tag]').each(function(node) {
+            var $node = $R.dom(node);
+            $node.removeAttr('data-redactor-tag');
+
+            if (this.utils.isEmptyHtml($node.html())) {
+                $node.html('<br>').unwrap();
+            }
+            else if (node.lastChild && node.lastChild.tagName === 'BR') {
+                $node.unwrap();
+            }
+            else {
+                $node.append('<br>').unwrap();
+            }
+        }.bind(this));
+        html = this.utils.getWrapperHtml($wrapper);
+        html = html.replace(/<br\s?\/?>$/, '');
+        html = html.replace(/<br\s?\/?><\/(td|th)>/, '</$1>');
+
         // remove tags
         var exceptedTags = this.opts.pasteBlockTags.concat(this.opts.pasteInlineTags);
         html = this.removeTagsExcept(html, exceptedTags);
@@ -5721,9 +5816,11 @@ $R.add('service', 'cleaner', {
         var filterAttrs = (this.opts.pasteKeepAttrs.length !== 0) ? ',' + this.opts.pasteKeepAttrs.join(',') : '';
         $elms.not('img, a, span.redactor-component, [data-redactor-style-cache]' + filterAttrs).each(function(node)
         {
-            while(node.attributes.length > 0)
-            {
-                node.removeAttribute(node.attributes[0].name);
+            var attrs = node.attributes;
+            for (var i = attrs.length - 1; i >= 0; i--) {
+                if (node.attributes[0].name !== 'class') {
+                    node.removeAttribute(attrs[i].name);
+                }
             }
         });
 
@@ -5738,6 +5835,19 @@ $R.add('service', 'cleaner', {
         {
             var style = node.getAttribute('data-redactor-style-cache');
             node.setAttribute('style', style);
+        });
+
+        // remove image attributes
+        var imageattrs = this.opts.imageAttrs;
+        $wrapper.find('img').each(function(node) {
+            if (node.attributes.length > 0) {
+                var attrs = node.attributes;
+                for (var i = attrs.length - 1; i >= 0; i--) {
+                    if (imageattrs.indexOf(attrs[i].name) === -1) {
+                        node.removeAttribute(attrs[i].name);
+                    }
+                }
+            }
         });
 
         // remove empty span
@@ -5778,6 +5888,15 @@ $R.add('service', 'cleaner', {
         html = html.replace(/<li><p>/gi, '<li>');
         html = html.replace(/<\/p><\/li>/gi, '</li>');
 
+        // gmail list paste
+        html = html.replace(/^<li/gi, '<ul><li');
+        html = html.replace(/<\/li>$/gi, '</li></ul>');
+
+        // convert lines to br
+        if (this.opts.breakline) {
+            html = html.replace(/\n/g, '<br>');
+        }
+
         // clean empty p
         html = html.replace(/<p>&nbsp;<\/p>/gi, '<p></p>');
         html = html.replace(/<p><br\s?\/?><\/p>/gi, '<p></p>');
@@ -5813,8 +5932,26 @@ $R.add('service', 'cleaner', {
     paragraphize: function(html)
     {
         var paragraphize = $R.create('cleaner.paragraphize', this.app);
+        html = paragraphize.convert(html);
+        return html;
+    },
+    storeComments: function(html, storedComments) {
+        var comments = html.match(new RegExp('<!--([\\w\\W]*?)-->', 'gi'));
+        if (comments !== null) {
+            for (var i = 0; i < comments.length; i++) {
+                html = html.replace(comments[i], '#####xstarthtmlcommentzz' + i + 'xendhtmlcommentzz#####');
+                storedComments.push(comments[i]);
+            }
+        }
 
-        return paragraphize.convert(html);
+        return html;
+    },
+    restoreComments: function(html, storedComments) {
+        for (var i = 0; i < storedComments.length; i++) {
+            html = html.replace('#####xstarthtmlcommentzz' + i + 'xendhtmlcommentzz#####', storedComments[i]);
+        }
+
+        return html;
     },
 
     // get
@@ -6002,32 +6139,52 @@ $R.add('service', 'cleaner', {
 
         return html;
     },
-    encodePreCode: function(html)
-    {
-        var matched = html.match(new RegExp('<code(.*?)>(.*?)<pre(.*?)>(.*?)</pre>(.*?)</code>', 'gi'));
-        if (matched !== null)
-        {
-            for (var i = 0; i < matched.length; i++)
-            {
-                var arr = matched[i].match(new RegExp('<pre(.*?)>([\\w\\W]*?)</pre>', 'i'));
-                html = html.replace(arr[0], this.encodeEntities(arr[0]));
-            }
-        }
 
-        var $wrapper = this.utils.buildWrapper(html);
+    encodeCode: function(html) {
+        // replace all tags
+        html = html.replace(/<(.*?)>/gi, 'xtagstartz$1xtagendz');
 
-        $wrapper.find('code code').replaceWith(this._encodeOuter.bind(this));
-        $wrapper.find('code pre').replaceWith(this._encodeOuter.bind(this));
-        $wrapper.find('pre pre').replaceWith(this._encodeOuter.bind(this));
-        $wrapper.find('code, pre').each(this._encodePreCodeLine.bind(this));
+        // revert pre / code
+        html = html.replace(/xtagstartzpre(.*?)xtagendz/g, '<pre$1>');
+        html = html.replace(/xtagstartzcode(.*?)xtagendz/g, '<code$1>');
+        html = html.replace(/xtagstartz\/codextagendz/g, '</code>');
+        html = html.replace(/xtagstartz\/prextagendz/g, '</pre>');
 
-        html = this.utils.getWrapperHtml($wrapper);
+        // encode
+        html = this._encodeCode(html);
 
-        // restore markers
-        html = this._decodeMarkers(html);
+        // revert all tags
+        html = html.replace(/xtagstartz(.*?)xtagendz/g, '<$1>');
+        html = html.replace(/xtagstartz\/(.*?)xtagendz/g, '</$1>');
 
         return html;
     },
+    _encodeCode: function(html) {
+        var $wrapper = this.utils.buildWrapper(html);
+        $wrapper.find('pre code, pre, code').each(this._encodeNode.bind(this));
+
+        return this.utils.getWrapperHtml($wrapper);
+    },
+    _encodeNode: function(node) {
+        var first = node.firstChild;
+        var html = node.innerHTML;
+        if (node.tagName === 'PRE' && first && first.tagName === 'CODE') {
+            return;
+        }
+
+        html = html.replace(/xtagstartz/g, '<');
+        html = html.replace(/xtagendz/g, '>');
+
+        var encoded = this.decodeEntities(html);
+        node.textContent = this._encodeNodeHtml(encoded);
+    },
+    _encodeNodeHtml: function(html) {
+        html = html.replace(/&nbsp;/g, ' ').replace(/<br\s?\/?>/g, '\n');
+        html = (this.opts.preSpaces) ? html.replace(/\t/g, new Array(this.opts.preSpaces + 1).join(' ')) : html;
+
+        return html;
+    },
+
     encodeEntities: function(str)
     {
         str = this.decodeEntities(str);
@@ -6118,6 +6275,26 @@ $R.add('service', 'cleaner', {
         // build wrapper
         var $wrapper = this.utils.buildWrapper(html);
 
+        // footnote fix
+        $wrapper.find('.MsoFootnoteText').each(function(node) {
+            var $node = $R.dom(node);
+            var $parent = $node.parent();
+            if ($parent.length !== 0 && $parent.attr('style').search(/mso-element:footnote/) !== -1) {
+                $node.find('a').attr('id', '_' + $parent.attr('id'));
+            }
+
+        });
+
+        $wrapper.find('.MsoFootnoteReference').each(function(node) {
+            var $node = $R.dom(node);
+            var $parent = $node.parent();
+            if ($parent.length !== 0 && $parent.get().tagName === 'A') {
+                $parent.attr('id', $parent.attr('name'));
+            }
+
+        });
+
+        // build lists
         $wrapper.find('p').each(function(node)
         {
             var $node = $R.dom(node);
@@ -6125,7 +6302,7 @@ $R.add('service', 'cleaner', {
             var matches = /mso-list:\w+ \w+([0-9]+)/.exec(str);
             if (matches)
             {
-                $node.data('_listLevel',  parseInt(matches[1], 10));
+                $node.attr('data-listLevel',  parseInt(matches[1], 10));
             }
         });
 
@@ -6171,75 +6348,56 @@ $R.add('service', 'cleaner', {
     _parseWordLists: function($wrapper)
     {
         var lastLevel = 0;
-        var pnt = null;
         var $item = null;
-        var setPnt = false;
+        var $list = null;
+        var $listChild = null;
 
-        $wrapper.find('p').each(function(node)
-        {
+        $wrapper.find('p').each(function(node) {
             var $node = $R.dom(node);
-            var currentLevel = $node.data('_listLevel');
+            var level = $node.attr('data-listLevel');
+            if (level === null && $node.hasClass('MsoListParagraphCxSpMiddle')) {
+                level = 1;
+            }
 
-            if (currentLevel !== null)
-            {
+            if (level !== null) {
                 var txt = $node.text();
-                var listTag = '<ul></ul>';
-                if (/^\s*\w+\./.test(txt))
-                {
-                    var matches = /([0-9])\./.exec(txt);
-                    if (matches)
-                    {
-                        var start = parseInt(matches[1], 10);
-                        listTag = (start > 1) ? '<ol start="' + start + '"></ol>' : '<ol></ol>';
-                    }
-                    else
-                    {
-                        listTag = '<ol></ol>';
+                var listTag = (/^\s*\w+\./.test(txt)) ? '<ol></ol>' : '<ul></ul>';
+
+                // new parent list
+                if ($node.hasClass('MsoListParagraphCxSpFirst') || $node.hasClass('MsoNormal')) {
+                    $list = $R.dom(listTag);
+                    $node.before($list);
+                }
+                // new child list
+                else if (level > lastLevel && lastLevel !== 0) {
+                    $listChild = $R.dom(listTag);
+                    $item.append($listChild);
+                    $list = $listChild;
+                }
+                // level up
+                if (level < lastLevel) {
+                    var len = lastLevel - level + 1;
+                    for (var i = 0; i < len; i++) {
+                        $list = $list.parent();
                     }
                 }
 
-                if (currentLevel > lastLevel)
-                {
-                    if (lastLevel === 0)
-                    {
-                        $node.before(listTag);
-                        pnt = $node.prev();
-                    }
-                    else
-                    {
-                        var $list = $R.dom(listTag);
-
-                        if ($item)
-                        {
-                            $item.append($list);
-                            pnt = $list;
-                            setPnt = true;
-
-                        }
-                        else
-                        {
-                            pnt.append($list);
-                        }
-
-                    }
-                }
-
+                // create item
                 $node.find('span').first().unwrap();
                 $item = $R.dom('<li>' + $node.html().trim() + '</li>');
-                pnt.append($item);
-                $node.remove();
-
-                if (setPnt)
-                {
-                    pnt = pnt.parent();
+                if ($list === null) {
+                    $node.before(listTag);
+                    $list = $node.prev();
                 }
 
-                lastLevel = currentLevel;
-                setPnt = false;
+                // append
+                $list.append($item);
+                $node.remove();
 
+                lastLevel = level;
             }
-            else
-            {
+            else {
+                $list = null;
                 lastLevel = 0;
             }
         });
@@ -6296,11 +6454,11 @@ $R.add('service', 'cleaner', {
     // replace
     _replaceScriptTag: function(html)
     {
-        return html.replace(this.reScriptTag, '<pre class="redactor-script-tag" $1>$2</pre>');
+        return html.replace(this.reScriptTag, '<script class="redactor-script-tag" $1>$2</script>');
     },
     _unreplaceScriptTag: function(html)
     {
-        return html.replace(/<pre class="redactor-script-tag"(.*?[^>]?)>([\w\W]*?)<\/pre>/gi, '<script$1>$2</script>');
+        return html.replace(/<script class="redactor-script-tag"(.*?[^>]?)>([\w\W]*?)<\/script>/gi, '<script$1>$2</script>');
     },
 	_replaceNlToBr: function(html)
 	{
@@ -6339,26 +6497,6 @@ $R.add('service', 'cleaner', {
         }
 
         return html;
-    },
-    _decodeMarkers: function(html)
-    {
-        var decodedMarkers = '<span id="selection-marker-$1" class="redactor-selection-marker">​</span>';
-        return html.replace(/&lt;span\sid="selection-marker-(start|end)"\sclass="redactor-selection-marker"&gt;(.*?[^>]?)&lt;\/span&gt;/g, decodedMarkers);
-    },
-    _encodeOuter: function(node)
-    {
-        return this.encodeEntities(node.outerHTML);
-    },
-    _encodePreCodeLine: function(node)
-    {
-        var first = node.firstChild;
-        if (node.tagName == 'PRE' && (first && first.tagName === 'CODE')) return;
-
-        var encoded = this.decodeEntities(node.innerHTML);
-        encoded = encoded.replace(/&nbsp;/g, ' ').replace(/<br\s?\/?>/g, '\n');
-        encoded = (this.opts.preSpaces) ? encoded.replace(/\t/g, new Array(this.opts.preSpaces + 1).join(' ')) : encoded;
-
-        node.textContent = encoded;
     }
 });
 $R.add('class', 'cleaner.figure', {
@@ -6407,6 +6545,9 @@ $R.add('class', 'cleaner.figure', {
     },
     unconvert: function(html, rules)
     {
+        html = html.replace(/<\/([^>]+)><div data-redactor-tag/g, '</$1>\n<div data-redactor-tag');
+        html = html.replace(/<\/([^>]+)><p/g, '</$1>\n<p');
+
         var $wrapper = this.utils.buildWrapper(html);
 
         // contenteditable
@@ -6432,22 +6573,15 @@ $R.add('class', 'cleaner.figure', {
         // remove caret
         $wrapper.find('span.redactor-component-caret').remove();
 
-        if (this.opts.breakline)
-        {
-            $wrapper.find('[data-redactor-tag="br"]').each(function(node)
-            {
-                if (node.lastChild && node.lastChild.tagName !== 'BR')
-                {
-                    node.appendChild(document.createElement('br'));
-                }
-            }).unwrap();
-        }
+        // break div
+        $wrapper = this._unconvertBreakTag($wrapper);
 
         // extra rules
         this._acceptExtraRules($wrapper, rules);
 
         html = this.utils.getWrapperHtml($wrapper);
         html = html.replace(/<br\s?\/?>$/, '');
+        html = html.replace(/<br\s?\/?><\/(td|th)>/, '</$1>');
 
         return html;
     },
@@ -6459,7 +6593,7 @@ $R.add('class', 'cleaner.figure', {
         if (this._isNonEditable($node)) return;
 
         // set id
-        if (!$node.attr('data-image'))
+        if (this.opts.imageObserve && !$node.attr('data-image'))
         {
             $node.attr('data-image', this.utils.getRandomId());
         }
@@ -6471,7 +6605,6 @@ $R.add('class', 'cleaner.figure', {
 
         if ($figure.length === 0)
         {
-
             var $parent = ($link.length !== 0) ? $link.closest('p') : $node.closest('p');
             if (this.opts.imageFigure === false && $parent.length !== 0)
             {
@@ -6481,6 +6614,10 @@ $R.add('class', 'cleaner.figure', {
             }
             else
             {
+                if ($parent.length !== 0) {
+                    $parent.unwrap();
+                }
+
                 $figure = ($link.length !== 0) ? $link.wrap('<figure>') : $node.wrap('<figure>');
             }
         }
@@ -6553,6 +6690,28 @@ $R.add('class', 'cleaner.figure', {
     },
 
     // unconvert
+    _unconvertBreakTag: function($wrapper) {
+        $wrapper.find('[data-redactor-tag]').each(function(node) {
+            var $node = $R.dom(node);
+            $node.removeAttr('data-redactor-tag');
+
+            if (this.utils.isEmptyHtml($node.html())) {
+                $node.unwrap();
+            }
+            else if (node.lastChild && node.lastChild.tagName === 'BR') {
+                $node.unwrap();
+            }
+            else {
+                var $next = $node.nextElement();
+                if ($next.length !== 0 && $next.attr('data-redactor-tag')) {
+                    node.appendChild(document.createElement('br'));
+                }
+
+                $node.unwrap();
+            }
+        }.bind(this));
+        return $wrapper;
+    },
     _unconvertForm: function(node)
     {
         this.utils.replaceToTag(node, 'form');
@@ -6667,11 +6826,11 @@ $R.add('class', 'cleaner.figure', {
     }
 });
 $R.add('class', 'cleaner.paragraphize', {
-    init: function(app)
-    {
+    init: function(app) {
         this.app = app;
         this.opts = app.opts;
         this.utils = app.utils;
+        this.cleaner = app.cleaner;
         this.element = app.element;
 
         // local
@@ -6683,149 +6842,137 @@ $R.add('class', 'cleaner.paragraphize', {
                 'button', 'option', 'map', 'area', 'math', 'hr', 'fieldset', 'legend', 'hgroup', 'nav', 'figure', 'details', 'menu', 'summary', 'p'];
     },
     // public
-    convert: function(html)
-    {
+    convert: function(html) {
+
         var value = this._isConverted(html);
 
-        return (value === true) ? this._convert(html) : value;
+        value = (value === true) ? this._convert(html) : value;
+        value = this._convertTable(value);
+
+        return value;
     },
 
     // private
-    _convert: function(html)
-    {
+    _convert: function(html, tablemarkup) {
         // build markup tag
-        var markupTag = (this.opts.breakline) ? 'sdivtag' : this.opts.markup;
+        var tag = (this.opts.breakline || tablemarkup) ? 'sdivtag' : this.opts.markup;
+        var attr = (tablemarkup) ? 'tbr' : 'br';
 
-        // store tags
+        // store
         html = this._storeTags(html);
 
-        // store comments
-        var storeComments = [];
-        var commentsMatch = html.match(new RegExp('<!--([\\w\\W]*?)-->', 'gi'));
-        if (commentsMatch !== null)
-        {
-            for (var i = 0; i < commentsMatch.length; i++)
-            {
-                html = html.replace(commentsMatch[i], '#####xstarthtmlcommentzz' + i + 'xendhtmlcommentzz#####');
-                storeComments.push(commentsMatch[i]);
-            }
-        }
+        var storedComments = [];
+        html = this.cleaner.storeComments(html, storedComments);
 
-        // remove new lines
+        // trim
         html = html.trim();
+        html = this._trimLinks(html);
 
-        if (this.opts.breakline)
-        {
-            html = html.replace(new RegExp('\\n#####', 'gi'), 'xnonbreakmarkerz#####');
-            html = html.replace(new RegExp('#####\\n\\n', 'gi'), "#####\nxnonbreakmarkerz");
-            html = html.replace(new RegExp('#####\\n', 'gi'), "#####xnonbreakmarkerz");
-            html = html.replace(/<br\s?\/?>\n/gi, "<br>");
-            html = html.replace(/\n/g, "<br>");
-            html = html.replace(/xnonbreakmarkerz/gi, "\n");
+        // replace new lines
+        html = html.replace(/xparagraphmarkerz(?:\r\n|\r|\n)$/g, '');
+        html = html.replace(/xparagraphmarkerz$/g, '');
+        html = html.replace(/xparagraphmarkerz(?:\r\n|\r|\n)/g, '\n');
+        html = html.replace(/xparagraphmarkerz/g, '\n');
+
+        if (this.opts.breakline) {
+            html = html.replace(/<br\s?\/?>(?:\r\n|\r|\n)/gi, 'xbreakmarkerz\n');
+            html = html.replace(/<br\s?\/?>/gi, 'xbreakmarkerz\n');
+            html = html.replace(/xbreakmarkerz\n<\//gi, 'xbreakmarkerz</');
+
         }
-        else
-        {
+        else {
             html = html.replace(/[\n]+/g, "\n");
         }
 
-        html = this._trimEmptyLines(html);
+        // wrap to tag
+        var str = '';
+        var arr = html.split("\n");
+        for (var i = 0; i < arr.length; i++) {
+            str += '<' + tag + '>' + arr[i] + '</' + tag + '>\n';
+        }
 
-        // paragraph and break markers
-        html = (this.opts.breakline) ? html : html.replace(/<br\s?\/?>\n/gi, "xbreakmarkerz\n");
-        html = html.replace(/(?:\r\n|\r|\n)/g, "xparagraphmarkerz");
-
-        // replace markers
-        html = html.replace(/xparagraphmarkerz/gi, "</" + markupTag + ">\n<" + markupTag + ">");
-        html = (this.opts.breakline) ? html : html.replace(/xbreakmarkerz/gi, "<br>");
-
-        // wrap all
-        html = '<' + markupTag + '>' + html + '</' + markupTag + '>';
+        html = str.replace(/\n$/, '');
 
         // clean
-        html = html.replace(new RegExp('<' + markupTag + '>#####', 'gi'), '#####');
-        html = html.replace(new RegExp('#####</' + markupTag + '>', 'gi'), '#####');
+        html = html.replace(new RegExp('<' + tag + '>\\s+#####', 'gi'), '#####');
+        html = html.replace(new RegExp('<' + tag + '>#####', 'gi'), '#####');
+        html = html.replace(new RegExp('#####</' + tag + '>', 'gi'), '#####');
 
-        // restore tags
+        // replace marker
+        html = (this.opts.breakline) ? html.replace(/xbreakmarkerz/gi, "<br>") : html;
+
+        // restore
         html = this._restoreTags(html);
+        html = this.cleaner.restoreComments(html, storedComments);
 
-        // restore comments
-        for (var i = 0; i < storeComments.length; i++)
-        {
-            html = html.replace('#####xstarthtmlcommentzz' + i + 'xendhtmlcommentzz#####', storeComments[i]);
+        // remove empty
+        if (this.opts.breakline) {
+            html = html.replace(new RegExp('<' + tag + '></' + tag + '>', 'gi'), '<' + tag + '><br></' + tag + '>');
+        }
+        else {
+            //html = html.replace(new RegExp('<' + tag + '><br\\s?/?></' + tag + '>', 'gi'), '');
+            //html = html.replace(new RegExp('<' + tag + '></' + tag + '>', 'gi'), '');
         }
 
         // clean restored
-        html = (this.opts.breakline) ? html : html.replace(new RegExp('<' + markupTag + '><br\\s?/?></' + markupTag + '>', 'gi'), '<' + markupTag + '></' + markupTag + '>');
-        html = html.replace(new RegExp('<sdivtag>', 'gi'), '<div data-redactor-tag="br">');
+        html = html.replace(new RegExp('<sdivtag>', 'gi'), '<div data-redactor-tag="' + attr + '">');
         html = html.replace(new RegExp('sdivtag', 'gi'), 'div');
+        html = html.replace(/<\/([^>]+)><div data-redactor-tag/g, '</$1>\n<div data-redactor-tag');
 
         return html;
     },
-    _storeTags: function(html)
-    {
+    _convertTable: function(html) {
+        var $wrapper = this.utils.buildWrapper(html);
+        $wrapper.find('td, th').each(this._convertCell.bind(this));
+        html = this.utils.getWrapperHtml($wrapper);
+
+        return html;
+    },
+    _convertCell: function(node) {
+        var $node = $R.dom(node);
+        this.stored = [];
+        var code = this._convert($node.html(), true);
+        $node.html(code);
+    },
+    _storeTags: function(html) {
         var self = this;
         var $wrapper = this.utils.buildWrapper(html);
-
-        if (this.opts.breakline)
-        {
-            $wrapper.find('p').each(function(node)
-            {
-                var $node = $R.dom(node);
-                var isUnwrap = ($node.closest('figure[data-redactor-type=widget],figure[data-redactor-type=form],.non-editable').length === 0);
-
-                if (isUnwrap)
-                {
-                    $node.append('<br><br>');
-                    $node.unwrap();
-                }
-            });
-        }
-
-        $wrapper.find(this.paragraphizeTags.join(', ')).each(function(node, i)
-        {
-            var replacement = document.createTextNode("\n" + self.remStart + i + self.remEnd + "\n");
+        $wrapper.find(this.paragraphizeTags.join(', ')).each(function(node, i) {
+            var replacement = document.createTextNode(self.remStart + i + self.remEnd + 'xparagraphmarkerz'); //  + "\n"
             self.stored.push(node.outerHTML);
             node.parentNode.replaceChild(replacement, node);
         });
 
         return this.utils.getWrapperHtml($wrapper);
     },
-    _restoreTags: function(html)
-    {
-        for (var i = 0; i < this.stored.length; i++)
-        {
+    _restoreTags: function(html) {
+        for (var i = 0; i < this.stored.length; i++) {
             this.stored[i] = this.stored[i].replace(/\$/g, '&#36;');
             html = html.replace(this.remStart + i + this.remEnd, this.stored[i]);
         }
 
         return html;
     },
-    _trimEmptyLines: function(html)
-    {
-        var str = '';
-        var arr = html.split("\n");
-        for (var i = 0; i < arr.length; i++)
-        {
-            if (arr[i].trim() !== '')
-            {
-                str += arr[i] + "\n";
-            }
-        }
+    _trimLinks: function(html) {
+        var $wrapper = this.utils.buildWrapper(html);
+        $wrapper.find('a').each(this._trimLink.bind(this));
+        html = this.utils.getWrapperHtml($wrapper);
 
-        return str.replace(/\n$/, '');
+        return html;
     },
-    _isConverted: function(html)
-    {
+    _trimLink: function(node) {
+        var $node = $R.dom(node);
+        $node.html($node.html().trim());
+    },
+    _isConverted: function(html) {
         if (this._isDisabled(html)) return html;
         else if (this._isEmptyHtml(html)) return this.opts.emptyHtml;
         else return true;
     },
-    _isDisabled: function()
-    {
+    _isDisabled: function() {
         return (this.opts.paragraphize === false || this.element.isType('inline'));
     },
-    _isEmptyHtml: function(html)
-    {
+    _isEmptyHtml: function(html) {
         return (html === '' || html === '<p></p>' || html === '<div></div>');
     }
 });
@@ -7066,7 +7213,7 @@ $R.add('class', 'inspector.parser', {
 
         // local
         this.el = el;
-        this.$el = $R.dom(this.el);
+        this.$el = $R.dom(this.el, '.redactor-in-' + this.uuid);
         this.node = this.$el.get();
 
         // comment node
@@ -7365,19 +7512,19 @@ $R.add('class', 'inspector.parser', {
     },
     _getClosestUpNode: function(selector)
     {
-        var $el = this.$el.parents(selector, '.redactor-in').last();
+        var $el = this.$el.parents(selector, '.redactor-in-' + this.uuid).last();
 
         return ($el.length !== 0) ? $el.get() : false;
     },
     _getClosestNode: function(selector)
     {
-        var $el = this.$el.closest(selector, '.redactor-in');
+        var $el = this.$el.closest(selector, '.redactor-in-' + this.uuid);
 
         return ($el.length !== 0) ? $el.get() : false;
     },
     _getClosestElement: function(selector)
     {
-        var $el = this.$el.closest(selector, '.redactor-in');
+        var $el = this.$el.closest(selector, '.redactor-in-' + this.uuid);
 
         return ($el.length !== 0) ? $el : false;
     }
@@ -7673,30 +7820,43 @@ $R.add('service', 'component', {
             if (contextmenu !== true) e.preventDefault();
         }
     },
-    executeScripts: function()
+    executeScripts: function(scripts)
     {
-        var $editor = this.editor.getElement();
-        var scripts = $editor.find('[data-redactor-type]').find("script").getAll();
-
-        for (var i = 0; i < scripts.length; i++)
+        if (scripts === undefined)
         {
-            if (scripts[i].src !== '')
+            var $editor = this.editor.getElement();
+            var scripts = $editor.find('[data-redactor-type]').find("script").getAll();
+            this.executeScripts.call(this, scripts);
+        }
+        else
+        {
+            for (var i = 0; i < scripts.length; i++)
             {
-                var src = scripts[i].src;
-                this.$doc.find('head script[src="' + src + '"]').remove();
+                if (scripts[i].src !== '')
+                {
+                    var src = scripts[i].src;
+                    this.$doc.find('head script[src="' + src + '"]').remove();
 
-                var $script = $R.dom('<script>');
-                $script.attr('src', src);
-                $script.attr('async defer');
+                    var $script = $R.dom('<script>');
+                    $script.attr('src', src);
+                    $script.attr('async defer');
+                    $script.get().onload = function()
+                    {
+                        if (src.search('instagram') !== -1) window.instgrm.Embeds.process();
+                        this.executeScripts(scripts.slice(i + 1));
+                    }.bind(this);
 
-                if (src.search('instagram') !== -1) $script.attr('onload', 'window.instgrm.Embeds.process()');
+                    var head = document.getElementsByTagName('head')[0];
+                    if (head) head.appendChild($script.get());
 
-                var head = document.getElementsByTagName('head')[0];
-                if (head) head.appendChild($script.get());
-            }
-            else
-            {
-                eval(scripts[i].innerHTML);
+                    break;
+                }
+                else
+                {
+                    try {
+                        eval(scripts[i].innerHTML);
+                    } catch (e) {}
+                }
             }
         }
     },
@@ -7722,6 +7882,10 @@ $R.add('service', 'insertion', {
     },
     set: function(html, clean, focus)
     {
+        if (html === null) {
+            html = '';
+        }
+
         html = (clean !== false) ? this.cleaner.input(html) : html;
         html = (clean !== false) ? this.cleaner.paragraphize(html) : html;
 
@@ -7819,7 +7983,7 @@ $R.add('service', 'insertion', {
 
         return markerInserted;
     },
-    insertToPoint: function(e, html, point)
+    insertToPoint: function(e, html, point, clean)
     {
         var pointInserted = (point === true) ? true : this.insertPoint(e);
         if (!pointInserted)
@@ -7831,7 +7995,7 @@ $R.add('service', 'insertion', {
         this.component.clearActive();
         this.selection.restoreMarkers();
 
-        return this.insertHtml(html);
+        return this.insertHtml(html, clean);
     },
     insertToOffset: function(start, html)
     {
@@ -7866,6 +8030,7 @@ $R.add('service', 'insertion', {
         var isCollapsed = this.selection.isCollapsed();
         var isText = this.selection.isText();
         var current = this.selection.getCurrent();
+        var block = this.selection.getBlock();
         var dataCurrent = this.inspector.parse(current);
 
         // collapse air
@@ -7904,7 +8069,6 @@ $R.add('service', 'insertion', {
             }
 
             fragment = this.utils.createFragment(parsedInput.html);
-
             this.utils.splitNode(current, fragment);
             this.caret.setEnd(fragment.last);
 
@@ -7929,6 +8093,23 @@ $R.add('service', 'insertion', {
             fragment = this.utils.createFragment(parsedInput.html);
 
             return this.insertNode(fragment, 'end');
+        }
+        // breakline div
+        else if (this.opts.breakline && block && block.tagName === 'DIV') {
+
+            parsedInput.html = (clean !== false) ? this.cleaner.paragraphize(parsedInput.html) : parsedInput.html;
+
+            fragment = this.utils.createFragment(parsedInput.html);
+
+            var range = this.selection.getRange();
+            if (range && this.selection.isCollapsed()) {
+                range.deleteContents();
+            }
+
+            this.utils.splitNode(current, fragment);
+            this.caret.setEnd(fragment.last);
+
+            return this._sendNodes(fragment.nodes);
         }
         // text inserting
         else if (isInsertedText)
@@ -8252,301 +8433,217 @@ $R.add('service', 'insertion', {
     }
 });
 $R.add('service', 'block', {
-    mixins: ['formatter'],
-    init: function(app)
-    {
+    init: function(app) {
         this.app = app;
+        this.tags = ['p', 'div', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
     },
-    // public
-    format: function(args)
-    {
+    // format
+    format: function(args) {
+
+        // params
+        this.params = {
+            args: false
+        };
+
         // type of applying styles and attributes
-        this.type = (args.type) ? args.type : 'set'; // add, remove, toggle
+        this.params.type = (args.type) ? args.type : 'set'; // add, remove, toggle
 
         // tag
-        this.tag = (typeof args === 'string') ? args : args.tag;
-        this.tag = this._prepareTag(this.tag);
-        this.tag = this.tag.toLowerCase();
+        this.params.tag = (typeof args === 'string') ? args : (args.tag || this.opts.markup);
+        this.params.tag = this.params.tag.toLowerCase();
 
-        if (typeof args === 'string') this.args = false;
-        else this.buildArgs(args);
+        // args
+        this.params.args = {
+            'class': args['class'] || false,
+            'style': args['style'] || false,
+            'attr': args['attr'] || false
+        };
+
+        if (!args['class'] && !args['style'] && !args['attr']) {
+            this.params.args = false;
+        }
 
         // format
         return this._format();
     },
-    getBlocks: function(tags)
-    {
-        return this.selection.getBlocks({ tags: tags || this._getTags(), first: true });
+
+    // funcs
+    add: function(args, tags) {
+        return this._apply('add', args, tags);
     },
-    getElements: function(tags)
-    {
-        var block = this.selection.getBlock();
-        if (!this.selection.isCollapsed() && block && (block.tagName === 'TD' || block.tagName === 'TH'))
-        {
-            return this._wrapInsideTable('div');
-        }
-        else
-        {
-            return $R.dom(this.getBlocks(tags));
-        }
+    set: function(args, tags) {
+        return this._apply('set', args, tags);
     },
-    clearFormat: function(tags)
-	{
-		this.selection.save();
+    toggle: function(args, tags) {
+        return this._apply('toggle', args, tags);
+    },
+    remove: function(args, tags) {
+        return this._apply('remove', args, tags);
+    },
 
-        var $elements = this.getElements(tags || this._getTags());
-        $elements.each(function(node)
-        {
-            while(node.attributes.length > 0)
-            {
-                node.removeAttribute(node.attributes[0].name);
-            }
-        });
+    // clear
+    clearFormat: function(tags) {
+        return this._clear(tags, 'all');
+    },
+    clearStyle: function(tags) {
+        return this._clear(tags, 'style');
+    },
+    clearClass: function() {
+        return this._clear(tags, 'class');
+    },
+    clearAttr: function() {
+        return this._clear(tags, 'attr');
+    },
 
-		this.selection.restore();
+    // format
+    _format: function() {
 
-        return $elements.getAll();
-	},
-
-    // private
-    _format: function()
-    {
-        this.selection.save();
-        var blocks = this.getBlocks();
-        var block = this.selection.getBlock();
         var nodes = [];
-        var data, replacedTag, $wrapper, nextBr;
 
-        // div break format
-        if (blocks.length === 1 && blocks[0].tagName === 'DIV')
-        {
-            data = this._getTextNodesData();
-            if (!data || data.nodes.length === 0)
-            {
-                nodes = this._replaceBlocks(blocks);
-                nodes = this._sendNodes(nodes);
+        // collapsed
+        this.collapsed = this.selection.isCollapsed();
 
-                setTimeout(function() { this.selection.restore(); }.bind(this), 0);
+        // save selection
+        this.selection.save();
 
-                return nodes;
-            }
+        // blocks
+        var block = this.selection.getBlock();
+        var blocks = this._getBlocks();
+        var type = (this._isToggleFormatType(blocks)) ? 'toggle' : 'set';
+        var replacedTag = this._getReplacedTag(type);
 
-            replacedTag = this._getReplacedTag('set');
-            $wrapper = $R.dom('<' + replacedTag + '>');
+        nodes = this._replaceBlocks(blocks, replacedTag);
 
-            nextBr = data.last.nextSibling;
-            if (nextBr && nextBr.tagName === 'BR')
-            {
-                $R.dom(nextBr).remove();
-            }
+        // apply args & clean
+        nodes = this._buildNodes(nodes);
 
-            for (var i = 0; i < data.nodes.length; i++)
-            {
-                $wrapper.append(data.nodes[i]);
-            }
+        // restore selection
+        this._restoreSelection(nodes);
 
-            this.utils.splitNode(blocks[0], [$wrapper.get()]);
-            nodes = this._sendNodes([$wrapper.get()]);
+        return nodes;
+    },
 
-            if (this.utils.isEmptyHtml($wrapper.html()))
-            {
-                this.caret.setStart($wrapper);
-            }
-            else
-            {
-                setTimeout(function() { this.selection.restore(); }.bind(this), 0);
-            }
 
-            return nodes;
+    // clear
+    _clear: function(tags, type, selection, nodes) {
+        // save selection
+        if (selection !== false) {
+		    this.selection.save();
+		}
+
+        // get elements
+        var $elements = this._getElements(tags, nodes);
+
+        // remove all format
+        if (type === 'all') {
+            this._removeAllAttr($elements, false);
         }
-        // standard format
-        else if (blocks.length > 0)
-        {
-            nodes = this._replaceBlocks(blocks);
-            nodes = this._sendNodes(nodes);
-
-            if (this.selection.isCollapsed() && blocks.length === 1 && this.utils.isEmpty(blocks[0]))
-            {
-                this.caret.setStart(nodes[0]);
-            }
-            else
-            {
-                setTimeout(function() { this.selection.restore(); }.bind(this), 1);
-            }
-
-            return nodes;
+        // remove style
+        else if (type === 'style') {
+            $elements.removeAttr('style');
+            $elements.removeAttr('data-redactor-style-cache');
         }
-        // td/th format uncollapsed
-        else if (!this.selection.isCollapsed() && block && (block.tagName === 'TD' || block.tagName === 'TH'))
-        {
-            replacedTag = this._getReplacedTag('set');
-
-            $wrapper = this._wrapInsideTable(replacedTag);
-
-            this.selection.setAll($wrapper);
-
-            return this._sendNodes([$wrapper.get()]);
+        // remove class
+        else if (type === 'class') {
+            $elements.removeAttr('class');
         }
-        // td/th format collapsed
-        else if (this.selection.isCollapsed() && block && (block.tagName === 'TD' || block.tagName === 'TH'))
-        {
-            var textnodes = this._getChildTextNodes(block);
+        // remove attrs
+        else if (type === 'attr') {
+            this._removeAllAttr($elements);
+        }
 
-            replacedTag = this._getReplacedTag('set');
-            var $wrapper = $R.dom('<' + replacedTag + '>');
+        // get nodes
+        nodes = $elements.getAll();
 
-            $R.dom(textnodes.first).before($wrapper);
-
-            for (var i = 0; i < textnodes.nodes.length; i++)
-            {
-                $wrapper.append(textnodes.nodes[i]);
-            }
-
-            var nextBr = $wrapper.get().nextSibling;
-            if (nextBr && nextBr.tagName === 'BR')
-            {
-                $R.dom(nextBr).remove();
-            }
-
-            return this._sendNodes([$wrapper.get()]);
+        // restore selection
+        if (selection !== false) {
+            this._restoreSelection(nodes);
         }
 
         return nodes;
     },
-    _wrapInsideTable: function(replacedTag)
-    {
-        var data = this._getTextNodesData();
-        var $wrapper = $R.dom('<' + replacedTag + '>');
 
-        $R.dom(data.first).before($wrapper);
-
-        for (var i = 0; i < data.nodes.length; i++)
-        {
-            $wrapper.append(data.nodes[i]);
+    // get
+    _getElements: function(tags, nodes) {
+        return (nodes) ? $R.dom(nodes) : $R.dom(this._getBlocks(tags));
+    },
+    _getBlocks: function(tags) {
+        var blocks = this.selection.getBlocks({ tags: tags || this.tags });
+        var finalBlocks = [];
+        for (var i = 0; i < blocks.length; i++) {
+            if (blocks[i].tagName === 'DIV' && !blocks[i].getAttribute('data-redactor-tag')) {
+                continue;
+            }
+            else {
+                finalBlocks.push(blocks[i]);
+            }
         }
 
-        var nextBr = $wrapper.get().nextSibling;
-        if (nextBr && nextBr.tagName === 'BR')
-        {
-            $R.dom(nextBr).remove();
+        return finalBlocks;
+    },
+
+    _getReplacedTag: function(type) {
+        if (this.opts.breakline) {
+            return (type === 'toggle') ? 'div' : (this.params.tag === 'p') ? 'div' : this.params.tag;
+        }
+        else {
+            return (type === 'toggle') ? this.opts.markup : this.params.tag;
+        }
+    },
+
+    // is
+    _isStandardParagraph: function() {
+        return (!this.opts.breakline && this.opts.markup === 'p');
+    },
+    _isStandardDiv: function() {
+        return (!this.opts.breakline && this.opts.markup === 'div');
+    },
+    _isBreaklineBlock: function(block) {
+        return (block && block.tagName === 'DIV' && block.getAttribute('data-redactor-tag') === 'br');
+    },
+    _isToggleFormatType: function(blocks) {
+        var count = 0;
+        var len = blocks.length;
+        for (var i = 0; i < len; i++) {
+            if (blocks[i] && this.params.tag === blocks[i].tagName.toLowerCase()) count++;
         }
 
-        return $wrapper;
+        return (count === len);
     },
-    _prepareTag: function(tag)
-    {
-        return (typeof tag === 'undefined') ? this.opts.markup : tag;
+    _isCurrentBlockOneAndEmpty: function(nodes) {
+        return (this.collapsed && nodes.length === 1 && this.utils.isEmpty(nodes[0]));
     },
-    _sendNodes: function(nodes)
-    {
-        if (nodes.length > 0)
-        {
+
+    // build
+    _buildNodes: function(nodes) {
+        if (nodes.length > 0) {
             // clean & appliyng styles and attributes
-            nodes = this.applyArgs(nodes, false);
+            nodes = this._applyArgs(nodes, false);
             nodes = this._combinePre(nodes);
             nodes = this._cleanBlocks(nodes);
         }
 
         return nodes;
     },
-    _getTags: function()
-    {
-        return ['div', 'p', 'blockquote', 'pre', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
-    },
-    _replaceBlocks: function(blocks)
-    {
-        var nodes = [];
-        var type = (this._isToggleFormatType(blocks)) ? 'toggle' : 'set';
-        var replacedTag = this._getReplacedTag(type);
 
-        for (var i = 0; i < blocks.length; i++)
-        {
+    // replace
+    _replaceBlocks: function(blocks, replacedTag) {
+        var nodes = [];
+
+        for (var i = 0; i < blocks.length; i++) {
             var $node = this.utils.replaceToTag(blocks[i], replacedTag);
             nodes.push($node.get());
         }
 
         return nodes;
     },
-    _getReplacedTag: function(type)
-    {
-        var replacedTag = (type === 'toggle') ? this.opts.markup : this.tag;
 
-        return (this.opts.breakline && replacedTag === 'p') ? 'div' : replacedTag;
-    },
-    _getChildTextNodes: function(el)
-    {
-        var nodes = el.childNodes;
-        var firstNode = nodes[0];
-        var finalNodes = [];
-        for (var i = 0; i <= nodes.length; i++)
-        {
-            var node = nodes[i];
-            if (node && node.nodeType !== 3 && this.inspector.isBlockTag(node.tagName))
-            {
-                break;
-            }
-
-            finalNodes.push(node);
-        }
-
-        return {
-            nodes: finalNodes,
-            first: firstNode
-        };
-    },
-    _getTextNodesData: function()
-    {
-        var nodes = this.selection.getNodes({ textnodes: true, keepbr: true });
-        if (nodes.length === 0) return false;
-
-        var firstNode = nodes[0];
-        var lastNode = nodes[nodes.length-1];
-        var node = lastNode;
-        var stop = false;
-
-        while (!stop)
-        {
-            var inline = this.selection.getInline(node);
-            node = (inline) ? inline.nextSibling : node.nextSibling;
-            if (!node)
-            {
-                stop = true;
-            }
-            else if (node.nodeType !== 3 && (node.tagName === 'BR' || this.inspector.isBlockTag(node.tagName)))
-            {
-                stop = true;
-            }
-            else
-            {
-                nodes.push(node);
-            }
-        }
-
-        return {
-            nodes: nodes,
-            first: firstNode,
-            last: lastNode
-        };
-    },
-    _isToggleFormatType: function(blocks)
-    {
-        var count = 0;
-        var len = blocks.length;
-        for (var i = 0; i < len; i++)
-        {
-            if (blocks[i] && this.tag === blocks[i].tagName.toLowerCase()) count++;
-        }
-
-        return (count === len);
-    },
-    _combinePre: function(nodes)
-    {
+    // combine
+    _combinePre: function(nodes) {
         var combinedNodes = [];
-        for (var i = 0; i < nodes.length; i++)
-        {
+        for (var i = 0; i < nodes.length; i++) {
             var next = nodes[i].nextElementSibling;
-            if (next && nodes[i].tagName === 'PRE' && next.tagName === 'PRE')
-            {
+            if (next && nodes[i].tagName === 'PRE' && next.tagName === 'PRE') {
                 var $current = $R.dom(nodes[i]);
                 var $next = $R.dom(next);
                 var newline = document.createTextNode('\n');
@@ -8561,38 +8658,218 @@ $R.add('service', 'block', {
 
         return combinedNodes;
     },
-    _cleanBlocks: function(nodes)
-    {
+
+    // clean
+    _cleanBlocks: function(nodes) {
         var headings = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
         var tags = this.opts.inlineTags;
-        for (var i = 0; i < nodes.length; i++)
-        {
+        for (var i = 0; i < nodes.length; i++) {
             var tag = nodes[i].tagName.toLowerCase();
             var $node = $R.dom(nodes[i]);
 
-            if (headings.indexOf(tag) !== - 1)
-            {
+            // remove all spans in headings
+            if (headings.indexOf(tag) !== - 1) {
                 $node.find('span').not('.redactor-component, .non-editable, .redactor-selection-marker').unwrap();
             }
-            else if (tag === 'pre')
-            {
+            // remove all inlines in pre
+            else if (tag === 'pre') {
                 $node.find(tags.join(',')).not('.redactor-selection-marker').unwrap();
             }
 
+
+            if (this.params.args === false && this.params.tag === 'p') {
+                $node.removeAttr('class');
+            }
+
             // breakline attr
-            if (this.opts.breakline && tag === 'div')
-            {
+            if (this.opts.breakline && tag === 'div') {
                 $node.attr('data-redactor-tag', 'br');
             }
-            else
-            {
+            else {
                 $node.removeAttr('data-redactor-tag');
             }
 
+            // normalize
             this.utils.normalizeTextNodes(nodes[i]);
         }
 
         return nodes;
+    },
+    _cleanEmptyClass: function($elements) {
+        $elements.each(function(node) {
+            if (node.className === '') node.removeAttribute('class');
+        });
+    },
+    _cleanEmptyStyle: function($node) {
+         if (this.utils.removeEmptyAttr($node.get(), 'style')) {
+            $node.removeAttr('data-redactor-style-cache');
+        }
+        else {
+            $node.attr('data-redactor-style-cache', $node.attr('style'));
+        }
+    },
+
+    // apply
+    _apply: function(type, args, tags, selection, nodes) {
+        // save selection
+        if (selection !== false) {
+		    this.selection.save();
+		}
+
+        // get elements
+        var $elements = this._getElements(tags, nodes);
+
+        // class
+        if (args['class']) {
+            if (type === 'set') {
+                $elements.removeAttr('class');
+                $elements.addClass(args['class']);
+            }
+            else if (type === 'add') {
+                $elements.addClass(args['class']);
+            }
+            else if (type === 'toggle') {
+                $elements.toggleClass(args['class']);
+            }
+            else if (type === 'remove') {
+                $elements.removeClass(args['class']);
+            }
+
+            this._cleanEmptyClass($elements);
+        }
+
+        // attr
+        if (args['attr']) {
+            if (type === 'set') {
+                this._removeAllAttr($elements);
+                $elements.attr(args['attr']);
+            }
+            else if (type === 'add') {
+                $elements.attr(args['attr']);
+            }
+            else if (type === 'toggle') {
+                params = args['attr'];
+                $elements.each(function(node) {
+                    var $node = $R.dom(node);
+                    for (var key in params) {
+                        if ($node.attr(key)) $node.removeAttr(key);
+                        else $node.attr(key, params[key]);
+                    }
+                });
+            }
+            else if (type === 'remove') {
+                $elements.removeAttr(args['attr']);
+            }
+        }
+
+        // style
+        if (args['style']) {
+            if (type === 'set') {
+                $elements.removeAttr('style');
+                $elements.css(args['style']);
+                $elements.each(function(node) {
+                    var $node = $R.dom(node);
+                    $node.attr('data-redactor-style-cache', $node.attr('style'));
+                });
+            }
+            else if (type === 'add') {
+                var params = args['style'];
+                $elements.each(function(node) {
+                    var $node = $R.dom(node);
+                    $node.css(params);
+                    $node.attr('data-redactor-style-cache', $node.attr('style'));
+                    this._convertStyleQuotes($node);
+                }.bind(this));
+            }
+            else if (type === 'toggle') {
+                var params = args['style'];
+                $elements.each(function(node) {
+                    var $node = $R.dom(node);
+                    for (var key in params) {
+                        var newVal = params[key];
+                        var oldVal = $node.css(key);
+
+                        oldVal = (this.utils.isRgb(oldVal)) ? this.utils.rgb2hex(oldVal) : oldVal.replace(/"/g, '');
+                        newVal = (this.utils.isRgb(newVal)) ? this.utils.rgb2hex(newVal) : newVal.replace(/"/g, '');
+
+                        oldVal = this.utils.hex2long(oldVal);
+                        newVal = this.utils.hex2long(newVal);
+
+                        var compareNew = (typeof newVal === 'string') ? newVal.toLowerCase() : newVal;
+                        var compareOld = (typeof oldVal === 'string') ? oldVal.toLowerCase() : oldVal;
+
+                        if (compareNew === compareOld) $node.css(key, '');
+                        else $node.css(key, newVal);
+                    }
+
+                    this._convertStyleQuotes($node);
+                    this._cleanEmptyStyle($node);
+                }.bind(this));
+            }
+            else if (type === 'remove') {
+                var name = args['style'];
+                $elements.each(function(node) {
+                    var $node = $R.dom(node);
+                    $node.css(name, '');
+                    this._cleanEmptyStyle($node);
+                }.bind(this));
+            }
+        }
+
+        // get nodes
+        nodes = $elements.getAll();
+
+        // restore selection
+        if (selection !== false) {
+            this._restoreSelection(nodes);
+        }
+
+        return nodes;
+    },
+    _applyArgs: function(nodes) {
+        if (this.params.args) {
+            nodes = this._apply(this.params.type, this.params.args, false, false, nodes);
+        }
+        else {
+            nodes = this._clear(false, 'all', false, nodes);
+        }
+
+        return nodes;
+    },
+
+    // remove
+    _removeAllAttr: function($elements, keepStyleAndClass) {
+        $elements.each(function(node) {
+            var keepAttrs = ['data-redactor-tag', 'data-redactor-style-cache'];
+            if (keepStyleAndClass === false) {
+                keepAttrs.push('style');
+                keepAttrs.push('class');
+            }
+
+            for (var i = node.attributes.length; i--> 0;) {
+                var nodeAttr = node.attributes[i];
+                var name = nodeAttr.name;
+                if (keepAttrs.indexOf(name) === -1) {
+                    node.removeAttributeNode(nodeAttr);
+                }
+            }
+        });
+    },
+
+    // selection
+    _restoreSelection: function(nodes) {
+        if (this._isCurrentBlockOneAndEmpty(nodes)) {
+            this.caret.setStart(nodes[0]);
+        }
+        else {
+            setTimeout(function() { this.selection.restore(); }.bind(this), 1);
+        }
+    },
+
+    // convert
+    _convertStyleQuotes: function($node) {
+        var style = $node.attr('style');
+        if (style) $node.attr('style', style.replace(/"/g, '\''));
     }
 });
 $R.add('service', 'inline', {
@@ -8748,6 +9025,10 @@ $R.add('service', 'inline', {
                         $secondPart = this.utils.cloneAttributes(inline, $secondPart);
 
                         $inline.after($secondPart.append(extractedContent));
+
+                        if ($secondPart.html().trim() === '') {
+                            $secondPart.remove();
+                        }
 
                         this.caret.setAfter(inline);
                     }
@@ -9018,6 +9299,12 @@ $R.add('service', 'inline', {
 
         if (this.tag !== 'u') $editor.find('u').unwrap();
 
+        $editor.find('.redactor-convertable-u').each(function(node)
+        {
+             nodes.push(node);
+
+        }.bind(this));
+
         // span convertable
         $editor.find('.redactor-convertable-apply').each(function(node)
         {
@@ -9158,6 +9445,7 @@ $R.add('service', 'autoparser', {
     init: function(app)
     {
         this.app = app;
+        this.cleaner = this.app.cleaner;
     },
     observe: function()
     {
@@ -9204,8 +9492,16 @@ $R.add('service', 'autoparser', {
         var stored = [];
         var z = 0;
 
+        // store
+        var storedComments = [];
+        html = this.cleaner.storeComments(html, storedComments);
+
         // encode
-        html = this.cleaner.encodePreCode(html);
+        html = this.cleaner.encodeCode(html);
+
+        // converting entity
+        html = html.replace(/\$/g, '&#36;');
+        html = html.replace(/&amp;/g, '&');
 
         // store tags
         for (var i = 0; i < tags.length; i++)
@@ -9257,6 +9553,23 @@ $R.add('service', 'autoparser', {
             html = html.replace(re, $video.get().outerHTML);
         }
 
+        // store tags
+        for (var i = 0; i < tags.length; i++)
+        {
+            var reTags = (tags[i] === 'img') ? '<' + tags[i] + '[^>]*>' : '<' + tags[i] + '([\\w\\W]*?)</' + tags[i] + '>';
+            var matched = html.match(new RegExp(reTags, 'gi'));
+
+            if (matched !== null)
+            {
+                for (var y = 0; y < matched.length; y++)
+                {
+                    html = html.replace(matched[y], '#####replaceparse' + z + '#####');
+                    stored.push(matched[y]);
+                    z++;
+                }
+            }
+        }
+
         // links
         if (this.opts.autoparseLinks && html.match(this.opts.regex.url))
         {
@@ -9268,6 +9581,9 @@ $R.add('service', 'autoparser', {
 
         // repeat for nested tags
         html = this._restoreReplaced(stored, html);
+
+        // restore comments
+        html = this.cleaner.restoreComments(html, storedComments);
 
         return html;
     },
@@ -9449,10 +9765,11 @@ $R.add('service', 'storage', {
     // public
     observeImages: function()
     {
-        var $editor = this.editor.getElement();
-        var $images = $editor.find('[data-image]');
-
-        $images.each(this._addImage.bind(this));
+        if (this.opts.imageObserve) {
+            var $editor = this.editor.getElement();
+            var $images = $editor.find('[data-image]');
+            $images.each(this._addImage.bind(this));
+        }
     },
     observeFiles: function()
     {
@@ -10047,7 +10364,7 @@ $R.add('service', 'utils', {
     // escape
     escapeRegExp: function(s)
     {
-        return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        return s.replace(/[-\/\\^$*~+?.()|[\]{}]/g, '\\$&');
     },
 
     // random
@@ -10331,7 +10648,11 @@ $R.add('module', 'editor', {
         var $editor = this.editor.getElement();
         var $container = this.container.getElement();
 
-        var classesEditor = ['redactor-in', 'redactor-in-' + this.uuid, 'redactor-structure', 'redactor-placeholder', 'notranslate', this.opts.stylesClass];
+        var classesEditor = ['redactor-in', 'redactor-in-' + this.uuid, 'redactor-structure', 'redactor-placeholder', 'notranslate'];
+        if (this.opts.stylesClass !== '') {
+            classesEditor.push(this.opts.stylesClass);
+        }
+
         var classesContainer = ['redactor-focus', 'redactor-blur', 'redactor-over', 'redactor-styles-on',
                                 'redactor-styles-off', 'redactor-toolbar-on', 'redactor-text-labeled-on', 'redactor-source-view'];
 
@@ -10427,10 +10748,11 @@ $R.add('module', 'editor', {
 
         $editor.attr('dir', this.opts.direction);
 
-        if (this.opts.tabindex)  $editor.attr('tabindex', this.opts.tabindex);
+        if (!this.opts.spellcheck) $editor.attr('spellcheck', false);
+        if (this.opts.tabindex) $editor.attr('tabindex', this.opts.tabindex);
         if (this.opts.minHeight) $editor.css('min-height', this.opts.minHeight);
         if (this.opts.maxHeight) $editor.css('max-height', this.opts.maxHeight);
-        if (this.opts.maxWidth)  $editor.css({ 'max-width': this.opts.maxWidth, 'margin': 'auto' });
+        if (this.opts.maxWidth) $editor.css({ 'max-width': this.opts.maxWidth, 'margin': 'auto' });
     },
     _buildAccesibility: function()
     {
@@ -10673,6 +10995,7 @@ $R.add('class', 'editor.events', {
             return;
         }
 
+
         if (this.app.isDragComponentInside())
         {
             var $dragComponent = $R.dom(this.app.getDragComponentInside());
@@ -10766,14 +11089,14 @@ $R.add('class', 'editor.events', {
     contextmenu: function(e)
     {
         // chrome crashes fix
-        this.editor.disableNonEditables();
+        //this.editor.disableNonEditables();
 
-        setTimeout(function()
-        {
-            this.editor.enableNonEditables();
-            this.app.broadcast('contextmenu', e);
+        //setTimeout(function()
+        //{
+          //  this.editor.enableNonEditables();
+           // this.app.broadcast('contextmenu', e);
 
-        }.bind(this), 0);
+        //}.bind(this), 0);
     },
     click: function(e)
     {
@@ -10783,12 +11106,14 @@ $R.add('class', 'editor.events', {
             e.preventDefault();
 
             var block = this.selection.getBlock();
-            var range = document.createRange();
-            range.selectNodeContents(block);
-            this.selection.setRange(range)
+            if (block) {
+                var range = document.createRange();
+                range.selectNodeContents(block);
+                this.selection.setRange(range)
+            }
         }
 
-        // observe bottom click
+        // observe bottom click & start click & outside click
         var $target = $R.dom(e.target);
         if ($target.hasClass('redactor-in'))
         {
@@ -10800,6 +11125,9 @@ $R.add('class', 'editor.events', {
             if (posHeight < e.pageY)
             {
                 this.app.broadcast('bottomclick', e);
+            }
+            else if ($target.hasClass('redactor-placeholder')) {
+                this.editor.startFocus(this.editor);
             }
         }
 
@@ -10984,6 +11312,7 @@ $R.add('module', 'source', {
         var startContent = this.cleaner.input(sourceContent, true, true);
         var syncContent = this.cleaner.output(startContent);
 
+
         // set content
         $editor.html(startContent);
         $source.val(syncContent);
@@ -11060,13 +11389,6 @@ $R.add('module', 'source', {
 
         if (this.app.isStarted()) html = this.app.broadcast('source.open', html);
 
-        // insert markers
-        var sourceSelection = $R.create('source.selection', this.app);
-
-        var editorHtml = sourceSelection.insertMarkersToEditor();
-        editorHtml = this.cleaner.output(editorHtml, false);
-        editorHtml = editorHtml.trim();
-
         // get height
         var editorHeight = $editor.height();
 
@@ -11079,10 +11401,17 @@ $R.add('module', 'source', {
         $source.on('keydown.redactor-source-events', this._onTabKey.bind(this));
         $source.on('focus.redactor-source-events', this._onFocus.bind(this));
 
-        $container.addClass('redactor-source-view');
-
-        // offset markers
-        sourceSelection.setSelectionOffsetSource(editorHtml);
+        if (this.opts.source.hasOwnProperty('codemirror')) {
+            var opts = (typeof this.opts.source.codemirror === 'object') ? this.opts.source.codemirror : {};
+            var codemirrorSrc = (typeof this.opts.source.codemirrorSrc !== 'undefined') ? this.opts.source.codemirrorSrc : CodeMirror;
+            this.codemirror = codemirrorSrc.fromTextArea($source.get(), opts);
+            this.codemirror.setSize(null, editorHeight);
+            this.codemirror.on('change', function(cm, changeObj){ cm.save() });
+            this.codemirror.on('change', this._onChangedSource.bind(this));
+        }
+        else {
+            $container.addClass('redactor-source-view');
+        }
 
         // buttons
         setTimeout(function()
@@ -11103,10 +11432,11 @@ $R.add('module', 'source', {
         var $container = this.container.getElement();
 
         var html = $source.val();
+        if (this.opts.source.hasOwnProperty('codemirror')) {
+            html = this.codemirror.getValue();
+            this.codemirror.toTextArea();
+        }
 
-        // insert markers
-        var sourceSelection = $R.create('source.selection', this.app);
-        html = sourceSelection.insertMarkersToSource(html);
 
         // clean
         html = this.cleaner.input(html, true);
@@ -11127,9 +11457,7 @@ $R.add('module', 'source', {
 
         setTimeout(function()
         {
-            if (sourceSelection.isOffset()) this.selection.restoreMarkers();
-            else if (sourceSelection.isOffsetEnd()) this.editor.endFocus();
-            else this.editor.startFocus();
+            this.editor.startFocus();
 
             // widget's scripts
             this.component.executeScripts();
@@ -11243,148 +11571,6 @@ $R.add('module', 'source', {
         $btn.setInactive();
     }
 });
-$R.add('class', 'source.selection', {
-    init: function(app)
-    {
-        this.app = app;
-        this.utils = app.utils;
-        this.source = app.source;
-        this.editor = app.editor;
-        this.marker = app.marker;
-        this.component = app.component;
-        this.selection = app.selection;
-
-        // local
-        this.markersOffset = false;
-        this.markersOffsetEnd = false;
-    },
-    insertMarkersToEditor: function()
-    {
-        var $editor = this.editor.getElement();
-        var start = this.marker.build('start');
-        var end = this.marker.build('end');
-        var component = this.component.getActive();
-        if (component)
-        {
-            this.marker.remove();
-            var $component = $R.dom(component);
-
-            $component.after(end);
-            $component.after(start);
-        }
-        else if (window.getSelection && this.selection.is())
-        {
-            this.marker.insert('both');
-        }
-
-        return this._getHtmlAndRemoveMarkers($editor);
-    },
-    setSelectionOffsetSource: function(editorHtml)
-    {
-        var start = 0;
-        var end = 0;
-        var $source = this.source.getElement();
-        if (editorHtml !== '')
-        {
-            var startMarker = this.utils.removeInvisibleChars(this.marker.buildHtml('start'));
-            var endMarker = this.utils.removeInvisibleChars(this.marker.buildHtml('end'));
-
-            start = this._strpos(editorHtml, startMarker);
-            end = this._strpos(editorHtml, endMarker) - endMarker.toString().length - 2;
-
-            if (start === false)
-            {
-                start = 0;
-                end = 0;
-            }
-        }
-
-        $source.get().setSelectionRange(start, end);
-        $source.get().scrollTop = 0;
-
-        setTimeout(function() { $source.focus(); }.bind(this), 0);
-    },
-    isOffset: function()
-    {
-        return this.markersOffset;
-    },
-    isOffsetEnd: function()
-    {
-        return this.markersOffsetEnd;
-    },
-    insertMarkersToSource: function(html)
-    {
-        var $source = this.source.getElement();
-        var markerStart = this.marker.buildHtml('start');
-        var markerEnd = this.marker.buildHtml('end');
-
-        var markerLength = markerStart.toString().length;
-        var startOffset = this._enlargeOffset(html, $source.get().selectionStart);
-        var endOffset = this._enlargeOffset(html, $source.get().selectionEnd);
-        var sizeOffset = html.length;
-
-        if (startOffset === sizeOffset)
-        {
-            this.markersOffsetEnd = true;
-        }
-        else if (startOffset !== 0 && endOffset !== 0)
-        {
-            this.markersOffset = true;
-
-            html = html.substr(0, startOffset) + markerStart + html.substr(startOffset);
-            html = html.substr(0, endOffset + markerLength) + markerEnd + html.substr(endOffset + markerLength);
-        }
-        else
-        {
-            this.markersOffset = false;
-        }
-
-        return html;
-    },
-
-    // private
-    _getHtmlAndRemoveMarkers: function($editor)
-    {
-        var html = $editor.html();
-        $editor.find('.redactor-selection-marker').remove();
-
-        return html;
-    },
-    _strpos: function(haystack, needle, offset)
-    {
-        var i = haystack.indexOf(needle, offset);
-        return i >= 0 ? i : false;
-    },
-    _enlargeOffset: function(html, offset)
-    {
-        var htmlLength = html.length;
-        var c = 0;
-
-        if (html[offset] === '>')
-        {
-            c++;
-        }
-        else
-        {
-            for(var i = offset; i <= htmlLength; i++)
-            {
-                c++;
-
-                if (html[i] === '>')
-                {
-                    break;
-                }
-                else if (html[i] === '<' || i === htmlLength)
-                {
-                    c = 0;
-                    break;
-                }
-            }
-        }
-
-        return offset + c;
-    }
-});
 $R.add('module', 'observer', {
     init: function(app)
     {
@@ -11454,10 +11640,12 @@ $R.add('module', 'clicktoedit', {
     },
     onenablereadonly: function()
     {
+        if (!this.opts.clickToEdit) return;
         if (!this._isEnabled()) this.stop();
     },
     ondisablereadonly: function()
     {
+        if (!this.opts.clickToEdit) return;
         if (!this._isEnabled()) this.start();
     },
     onstop: function()
@@ -11511,6 +11699,7 @@ $R.add('module', 'clicktoedit', {
         this.app.broadcast('disable');
         this.app.broadcast('clickSave', html);
         this.app.broadcast('clickStop');
+        this.app.broadcast('toolbar.removeexternal');
         this._build();
     },
     cancel: function(e)
@@ -11526,6 +11715,7 @@ $R.add('module', 'clicktoedit', {
         this.app.broadcast('disable');
         this.app.broadcast('clickCancel', html);
         this.app.broadcast('clickStop');
+        this.app.broadcast('toolbar.removeexternal');
         this._build();
     },
 
@@ -11660,6 +11850,9 @@ $R.add('module', 'contextbar', {
         this.$target = (this.toolbar.isTarget()) ? this.toolbar.getTargetElement() : this.$body;
     },
     // messages
+    onstop: function() {
+        this.stop();
+    },
     onenablereadonly: function()
     {
         this.stop();
@@ -11829,9 +12022,14 @@ $R.add('class', 'contextbar.button', {
 
         if (typeof this.obj.title !== 'string')
         {
-            this.attr('target', '_blank');
-            this.attr('href', this.obj.title.attr('href'));
-            this.html(this.obj.title.attr('href'));
+            var url = this.obj.title.attr('href');
+            this.attr('href', url);
+
+            if (url.search(/^#/) === -1) {
+                this.attr('target', '_blank');
+            }
+
+            this.text(this.obj.html || url);
         }
         else
         {
@@ -11917,6 +12115,13 @@ $R.add('module', 'toolbar', {
             }
         }
     },
+    ontoolbar: {
+        removeexternal: function() {
+            if (!this.opts.air && this.opts.toolbarExternal && this.opts.clickToEdit) {
+                $R.dom(this.opts.toolbarExternal).html('');
+            }
+        }
+    },
     onobserve: function()
     {
         if (this.toolbar.is())
@@ -11981,7 +12186,7 @@ $R.add('module', 'toolbar', {
     },
     _buildImageButton: function()
     {
-        if (!this.opts.imageUpload) this.utils.removeFromArrayByValue(this.buttons, 'image');
+        if (!this.opts.imageUpload && !this.opts.imageManagerJson) this.utils.removeFromArrayByValue(this.buttons, 'image');
     },
     _buildFileButton: function()
     {
@@ -12344,7 +12549,14 @@ $R.add('class', 'toolbar.fixed', {
         var isHeight = ($editor.height() < 100);
         var isEmpty = this.editor.isEmpty();
 
-        if (isHeight || isEmpty || this.editor.isSourceMode()) return;
+        if (isHeight || isEmpty) {
+            this.reset();
+            return;
+        }
+
+        if (this.editor.isSourceMode()) {
+            return;
+        }
 
         var toolbarHeight = $toolbar.height();
         var toleranceEnd = 60;
@@ -12353,6 +12565,11 @@ $R.add('class', 'toolbar.fixed', {
         var boxEnd = boxOffset + $container.height() - toleranceEnd;
         var scrollOffset = this.$fixedTarget.scrollTop() + this.opts.toolbarFixedTopOffset;
         var top = (!this.toolbar.isTarget()) ? 0 : this.$fixedTarget.offset().top - this.$win.scrollTop();
+        if (this.toolbar.isTarget() && this.$fixedTarget.css('position') === 'fixed') {
+            var bs = (this.$fixedTarget.hasClass('modal') && this.$fixedTarget.hasClass('fade'));
+            var bsFix = (bs) ? $container.closest('.modal-dialog').position().top : 0;
+            top = this.$fixedTarget.scrollTop() - bsFix;
+        }
 
 
         if (scrollOffset > boxOffset && scrollOffset < boxEnd)
@@ -12722,9 +12939,9 @@ $R.add('module', 'link', {
     {
         var current = this._getCurrent();
         var data = this.inspector.parse(current);
-        if (data.isLink())
+        if (data.isLink() || data.isFile())
         {
-            var node = data.getLink();
+            var node = (data.isFile()) ? data.getFile() : data.getLink();
             var $el = $R.dom(node);
 
             var $point = $R.dom('<a>');
@@ -12736,7 +12953,8 @@ $R.add('module', 'link', {
 
             var buttons = {
                 "link": {
-                    title: $point
+                    title: $point,
+                    html: this._truncateText(url)
                 },
                 "edit": {
                     title: this.lang.get('edit'),
@@ -12800,7 +13018,7 @@ $R.add('module', 'link', {
         var $item = dropdown.getItem('link');
 
         var data = this.inspector.parse(current);
-        var title = (data.isLink()) ? this.lang.get('link-edit') : this.lang.get('link-insert');
+        var title = (data.isLink() || data.isFile()) ? this.lang.get('link-edit') : this.lang.get('link-insert');
 
         $item.setTitle(title);
     },
@@ -12840,6 +13058,9 @@ $R.add('module', 'link', {
         var nodes = this._getLinks();
         this._setLinkData(nodes, data, 'updated');
         this._resetCurrent();
+
+        // callback
+        this.app.broadcast('link.changed', nodes);
     },
     _insert: function(data)
     {
@@ -12985,11 +13206,11 @@ $R.add('module', 'link', {
         var data = this.inspector.parse(current);
         var $link;
 
-        if (data.isLink())
+        if (data.isLink() || data.isFile())
         {
             this.currentLink = true;
 
-            $link = data.getLink();
+            $link = (data.isFile()) ? data.getFile() : data.getLink();
             $link = $R.create('link.component', this.app, $link);
         }
         else
@@ -13017,7 +13238,7 @@ $R.add('module', 'link', {
         for (var i = 0; i < links.length; i++)
         {
             var data = this.inspector.parse(links[i]);
-            if (data.isLink())
+            if (data.isLink() || data.isFile())
             {
                 arr.push(links[i]);
             }
@@ -13180,6 +13401,8 @@ $R.add('class', 'link.component', {
     },
     _cleanUrl: function(url)
     {
+        url = url.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+
         return url.trim().replace(/[^\W\w\D\d+&\'@#/%?=~_|!:,.;\(\)]/gi, '');
     },
     _findDeepestChild: function(parent)
@@ -13214,6 +13437,7 @@ $R.add('module', 'modal', {
     init: function(app)
     {
         this.app = app;
+        this.uuid = app.uuid;
         this.lang = app.lang;
         this.$doc = app.$doc;
         this.$win = app.$win;
@@ -13249,6 +13473,10 @@ $R.add('module', 'modal', {
     {
         this._close();
     },
+    onstop: function() {
+        this.$body.find('#redactor-modal-' + this.uuid).remove();
+        this.$body.find('#redactor-overlay-' + this.uuid).remove();
+    },
     stop: function()
     {
         if (this.$box)
@@ -13256,15 +13484,14 @@ $R.add('module', 'modal', {
             this.$box.remove();
             this.$box = false;
             this.$modal = false;
-
-            this.$doc.off('.redactor.modal');
-            this.$win.off('.redactor.modal');
         }
 
-        if (this.$overlay)
-        {
+        if (this.$overlay) {
             this.$overlay.remove();
         }
+
+        this.$doc.off('.redactor.modal');
+        this.$win.off('.redactor.modal');
     },
     resize: function()
     {
@@ -13367,6 +13594,7 @@ $R.add('module', 'modal', {
         if (this.selectionMarkers) this.selection.restoreMarkers();
         else this.selection.restore();
 
+
         this.selectionMarkers = false;
 
         this._broadcast('close');
@@ -13399,19 +13627,19 @@ $R.add('module', 'modal', {
     _buildModalBox: function()
     {
         this.$box = $R.dom('<div>');
-        this.$box.attr('id', 'redactor-modal');
-        this.$box.addClass('redactor-animate-hide');
+        this.$box.attr('id', 'redactor-modal-' + this.uuid);
+        this.$box.addClass('redactor-modal-box redactor-animate-hide');
         this.$box.html('');
         this.$body.append(this.$box);
     },
     _buildOverlay: function()
     {
-        this.$overlay = $R.dom('#redactor-overlay');
+        this.$overlay = $R.dom('#redactor-overlay-' + this.uuid);
         if (this.$overlay.length === 0)
         {
             this.$overlay = $R.dom('<div>');
-            this.$overlay.attr('id', 'redactor-overlay');
-            this.$overlay.addClass('redactor-animate-hide');
+            this.$overlay.attr('id', 'redactor-overlay-' + this.uuid);
+            this.$overlay.addClass('redactor-overlay redactor-animate-hide');
             this.$body.prepend(this.$overlay);
         }
     },
@@ -13461,6 +13689,7 @@ $R.add('module', 'modal', {
         var $tabs = $body.find('.redactor-modal-tab');
         var $box = $body.find('.redactor-modal-tabs');
 
+
         if ($tabs.length > 1)
         {
             $box = ($box.length === 0) ? $R.dom('<div>') : $box.html('');
@@ -13485,6 +13714,10 @@ $R.add('module', 'modal', {
             }.bind(this));
 
             $body.prepend($box);
+        }
+
+        if ($tabs.length === 1) {
+            $tabs.show();
         }
     },
     _buildModalForm: function()
@@ -14198,6 +14431,9 @@ $R.add('class', 'input.arrow', {
         // table
         if (data.isTable())
         {
+            block = data.getTable();
+            isEnd = this.caret.isEnd(block);
+
             if (isEnd || isEndEditor)
             {
                 return this._exitNextElement(e, data.getComponent());
@@ -14661,6 +14897,12 @@ $R.add('class', 'input.delete', {
         {
             e.preventDefault();
 
+            if (this.utils.isEmpty(prev)) {
+                $prev = $R.dom(prev);
+                $prev.remove();
+                return;
+            }
+
             var textNode = this.utils.createInvisibleChar();
             var $current = $R.dom(block);
             $prev = $R.dom(prev);
@@ -14937,6 +15179,11 @@ $R.add('class', 'input.enter', {
         var block = this.selection.getBlock();
         var data = this.inspector.parse(current);
         var blockTag = (block) ? block.tagName.toLowerCase() : false;
+        var $variable = $R.dom(current).closest('[data-redactor-type=variable]');
+        // variable parent
+        if ($variable.length !== 0) {
+            this.caret.setAfter($variable);
+        }
 
         // pre
         if (data.isPre())
@@ -14976,11 +15223,20 @@ $R.add('class', 'input.enter', {
             e.preventDefault();
             return this._traverseDl(current);
         }
+        // breakline
+        else if (this.opts.breakline && blockTag === 'div') {
+            setTimeout(this._replaceBlock.bind(this), 1);
+            return;
+        }
         // text
-        else if (isText || (this.opts.breakline && blockTag === 'div'))
+        else if (isText)
         {
             e.preventDefault();
             return this.insertion.insertBreakLine();
+        }
+        // list
+        else if (data.isList()) {
+            return;
         }
         // div / p
         else
@@ -15059,11 +15315,16 @@ $R.add('class', 'input.enter', {
 
         if (this.opts.breakline && block && block.tagName === 'DIV')
         {
+            $block.append(document.createElement('br'));
             $block.attr('data-redactor-tag', 'br');
         }
     },
     _clearBlock: function($block, block)
     {
+        if (block.tagName === 'DIV') {
+            $block.find('br').remove();
+        }
+
         if (this.opts.cleanInlineOnEnter || block.innerHTML === '<br>')
         {
             $block.html('');
@@ -15109,6 +15370,7 @@ $R.add('class', 'input.paste', {
         var dataCurrent = this.inspector.parse(current);
 
         this.dropPasted = this.dataTransfer;
+        //this.isRawCode = (this.dropPasted) ? (dataCurrent.isPre() || dataCurrent.isCode()) : this._isPlainText(clipboard);
         this.isRawCode = (dataCurrent.isPre() || dataCurrent.isCode());
 
         this.editor.enablePasting();
@@ -15121,6 +15383,7 @@ $R.add('class', 'input.paste', {
 
         if (this.isRawCode || !clipboard)
         {
+
             var text;
             if (!this.isRawCode && !clipboard && window.clipboardData)
             {
@@ -15144,7 +15407,7 @@ $R.add('class', 'input.paste', {
         {
             // html / text
             var url = clipboard.getData('URL');
-            var html = (this._isPlainText(clipboard)) ? clipboard.getData("text/plain") : clipboard.getData("text/html");
+            var html = (this._isPlainText(clipboard)) ? this.cleaner.encodeEntities(clipboard.getData("text/plain")) : clipboard.getData("text/html");
 
             // safari anchor links
             html = (!url || url === '') ? html : url;
@@ -15210,6 +15473,7 @@ $R.add('class', 'input.paste', {
         // clean
         html = html.trim();
         html = (this.isRawCode) ? html : this.cleaner.paste(html);
+        html = html.trim();
         html = (this.isRawCode) ? this.cleaner.encodePhpCode(html) : html;
 
         // paste callback
@@ -15221,17 +15485,33 @@ $R.add('class', 'input.paste', {
         // stop input
         if (!this.opts.input) return;
 
-        // autoparse
-        if (this.opts.autoparse && this.opts.autoparsePaste)
-        {
-            html = this.autoparser.parse(html);
+        this.app.broadcast('state', false);
+
+        // insert
+        var nodes = [];
+        if (this.isRawCode) {
+            html = html.replace('&lt;?php', '<?php');
+
+            var textNode = document.createTextNode(html);
+            nodes = this.insertion.insertNode(textNode, 'after');
+
+            this.app.broadcast('pasted', nodes);
+        }
+        else {
+
+            // autoparse
+            if (this.opts.autoparse && this.opts.autoparsePaste)
+            {
+                html = this.autoparser.parse(html);
+            }
+
+            nodes = (this.dropPasted) ? this.insertion.insertToPoint(e, html, this.pointInserted) : this.insertion.insertHtml(html);
+
+            // pasted callback
+            this.app.broadcast('pasted', nodes);
+            this.app.broadcast('autoparseobserve');
         }
 
-        var nodes = (this.dropPasted) ? this.insertion.insertToPoint(e, html, this.pointInserted) : this.insertion.insertHtml(html);
-
-        // pasted callback
-        this.app.broadcast('pasted', nodes);
-        this.app.broadcast('autoparseobserve');
     },
     _insertFiles: function(e, files)
     {
@@ -15922,7 +16202,7 @@ $R.add('class', 'form.component', {
 $R.add('module', 'image', {
     modals: {
         'image':
-            '<div class="redactor-modal-tab" data-title="## upload ##"><form action=""> \
+            '<div class="redactor-modal-tab redactor-modal-tab-upload" data-title="## upload ##"><form action=""> \
                 <input type="file" name="file"> \
             </form></div>',
         'imageedit':
@@ -16082,7 +16362,7 @@ $R.add('module', 'image', {
         image: {
             open: function($modal, $form)
             {
-                this._setUpload($form);
+                this._setUpload($modal, $form);
             }
         },
         imageedit: {
@@ -16124,10 +16404,11 @@ $R.add('module', 'image', {
 
         var current = this.selection.getCurrent();
         var data = this.inspector.parse(current);
+        var $img = $R.dom(current).closest('img');
 
-        if (!data.isFigcaption() && data.isComponentType('image'))
+        if (!data.isFigcaption() && data.isComponentType('image') || $img.length !== 0)
         {
-            var node = data.getComponent();
+            var node = ($img.length !== 0) ? $img.get() : data.getComponent();
             var buttons = {
                 "edit": {
                     title: this.lang.get('edit'),
@@ -16195,8 +16476,14 @@ $R.add('module', 'image', {
     {
         var current = this.selection.getCurrent();
         var data = this.inspector.parse(current);
+        var $img = $R.dom(current).closest('img');
 
-        return (data.isComponentType('image') && data.isComponentActive()) ? this.component.create('image', data.getComponent()) : false;
+        if ($img.length !== 0) {
+            return this.component.create('image', $img);
+        }
+        else {
+            return (data.isComponentType('image') && data.isComponentActive()) ? this.component.create('image', data.getComponent()) : false;
+        }
     },
     _insert: function(response, e)
     {
@@ -16243,7 +16530,7 @@ $R.add('module', 'image', {
             if (typeof response[key] === 'object')
             {
                 var $img = this._createImageAndStore(response[key]);
-                var inserted = (e) ? this.insertion.insertToPoint(e, $img) : this.insertion.insertHtml($img);
+                var inserted = (e) ? this.insertion.insertToPoint(e, $img, false, false) : this.insertion.insertHtml($img, false);
 
                 this._removeSpaceBeforeFigure(inserted[0]);
 
@@ -16268,7 +16555,7 @@ $R.add('module', 'image', {
 
                 if (z === 1)
                 {
-                    inserted = (e) ? this.insertion.insertToPoint(e, $img) : this.insertion.insertHtml($img);
+                    inserted = (e) ? this.insertion.insertToPoint(e, $img, false, false) : this.insertion.insertHtml($img, false);
                 }
                 else
                 {
@@ -16309,6 +16596,19 @@ $R.add('module', 'image', {
         if (!img) return;
 
         var prev = img.previousSibling;
+        var next = img.nextSibling;
+        var $prev = $R.dom(prev);
+        var $next = $R.dom(next);
+
+        if (this.opts.breakline) {
+            if (next && $next.attr('data-redactor-tag') === 'br') {
+                $next.find('br').first().remove();
+            }
+            if (prev && $prev.attr('data-redactor-tag') === 'br') {
+                $prev.find('br').last().remove();
+            }
+        }
+
         if (prev)
         {
             this._removeInvisibleSpace(prev);
@@ -16408,7 +16708,7 @@ $R.add('module', 'image', {
     },
     _setFormData: function($modal, $form)
     {
-        this._buildPreview();
+        this._buildPreview($modal);
         this._buildPreviewUpload();
 
         var imageData = this.$image.getData();
@@ -16463,8 +16763,14 @@ $R.add('module', 'image', {
 
         return;
     },
-    _setUpload: function($form)
+    _setUpload: function($modal, $form)
     {
+        if (!this.opts.imageUpload) {
+            var $body = $modal.getBody();
+            var $tab = $body.find('.redactor-modal-tab-upload');
+            $tab.remove();
+        }
+
         var options = {
             url: this.opts.imageUpload,
             element: $form.getField('file'),
@@ -16475,9 +16781,9 @@ $R.add('module', 'image', {
 
         this.app.api('module.upload.build', options);
     },
-    _buildPreview: function()
+    _buildPreview: function($modal)
     {
-        this.$preview = $R.dom('#redactor-modal-image-preview');
+        this.$preview = $modal.find('#redactor-modal-image-preview');
 
         var imageData = this.$image.getData();
         var $previewImg = $R.dom('<img>');
@@ -16502,6 +16808,7 @@ $R.add('module', 'image', {
             url: this.opts.imageUpload,
             element: this.$previewBox,
             name: 'imageedit',
+            data: this.opts.imageData,
             paramName: this.opts.imageUploadParam
         };
 
@@ -16588,7 +16895,9 @@ $R.add('class', 'image.component', {
     },
     _set_id: function(id)
     {
-       this.$element.attr('data-image', id);
+        if (this.opts.imageObserve) {
+            this.$element.attr('data-image', id);
+        }
     },
     _set_title: function(title)
     {
@@ -16626,6 +16935,7 @@ $R.add('class', 'image.component', {
         var imageMargin = '';
         var textAlign = '';
         var $el = this;
+        var $img = this.find('img');
         var $figcaption = this.find('figcaption');
 
         if (typeof this.opts.imagePosition === 'object')
@@ -16644,6 +16954,8 @@ $R.add('class', 'image.component', {
         }
         else
         {
+            var width = $img.width();
+
             switch (align)
             {
                 case 'left':
@@ -16656,14 +16968,22 @@ $R.add('class', 'image.component', {
                 break;
                 case 'center':
                     textAlign = 'center';
+                    imageMargin = 'auto';
                 break;
             }
 
-            $el.css({ 'float': imageFloat, 'margin': imageMargin, 'text-align': textAlign });
+            $el.css({ 'float': imageFloat, width: width + 'px', maxWidth: width + 'px', 'margin': imageMargin, 'text-align': textAlign });
             $el.attr('rel', $el.attr('style'));
+
+            if (align === 'none') {
+                $el.css('max-width', '');
+                $el.css('width', '');
+            }
 
             if (align === 'center')
             {
+                $el.css('max-width', '');
+                $el.css('width', '');
                 $figcaption.css('text-align', 'center');
             }
             else
@@ -16828,6 +17148,8 @@ $R.add('class', 'image.resize', {
     {
         this.$target.find('#redactor-image-resizer').remove();
 
+        if (this.app.isReadOnly()) return;
+
         var data = this.inspector.parse(e.target);
         var $editor = this.editor.getElement();
 
@@ -16860,7 +17182,7 @@ $R.add('class', 'image.resize', {
             var resizerWidth =  this.$resizer.width();
             var resizerHeight =  this.$resizer.height();
 
-            this.$resizer.css({ top: (pos.top + height - resizerHeight + topOffset) + 'px', left: (pos.left + width - resizerWidth + leftOffset) + 'px' });
+            this.$resizer.css({ top: Math.round(pos.top + height - resizerHeight + topOffset) + 'px', left: Math.round(pos.left + width - resizerWidth + leftOffset) + 'px' });
         }
     },
     _set: function(e)
@@ -16871,6 +17193,7 @@ $R.add('class', 'image.resize', {
             x : e.pageX,
             y : e.pageY,
             el : this.$resizableImage,
+            $figure: this.$resizableImage.closest('figure'),
             ratio: this.$resizableImage.width() / this.$resizableImage.height(),
             h: this.$resizableImage.height()
         };
@@ -16910,11 +17233,19 @@ $R.add('class', 'image.resize', {
 
         var width = height * this.resizeHandle.ratio;
 
+        width = Math.round(width);
+        height = Math.round(height);
+
         if (height < 20 || width < 100) return;
         if (this._getResizableBoxWidth() <= width) return;
 
-        this.resizeHandle.el.attr({width: width, height: height});
+        if (this.resizeHandle.$figure.length !== 0 && this.resizeHandle.$figure.css('max-width') !== '') {
+            this.resizeHandle.$figure.css('max-width', width + 'px');
+        }
+
+        this.resizeHandle.el.attr({ width: width, height: height });
         this.resizeHandle.el.width(width);
+        this.resizeHandle.el.css('max-width', width + 'px');
         this.resizeHandle.el.height(height);
         this._setResizerPosition();
     },
@@ -17004,25 +17335,6 @@ $R.add('module', 'file', {
                 this._uploadError(response);
             }
         }
-    },
-    oncontextbar: function(e, contextbar)
-    {
-        var current = this.selection.getCurrent();
-        var data = this.inspector.parse(current);
-        if (data.isFile())
-        {
-            var node = data.getFile();
-            var buttons = {
-                "remove": {
-                    title: this.lang.get('delete'),
-                    api: 'module.file.remove',
-                    args: node
-                }
-            };
-
-            contextbar.set(e, node, buttons, 'bottom');
-        }
-
     },
 
     // public
@@ -17289,8 +17601,6 @@ $R.add('module', 'buffer', {
         this.state = false;
         this.passed = false;
         this.keyPressed = false;
-        this.savedHtml = false;
-        this.savedOffset = false;
         this.undoStorage = [];
         this.redoStorage = [];
     },
@@ -17323,6 +17633,10 @@ $R.add('module', 'buffer', {
 
         this.passed = false;
         this._saveState(html, offset);
+
+        if (e === false) {
+            this._setUndo();
+        }
     },
     onenable: function()
     {
@@ -17352,6 +17666,7 @@ $R.add('module', 'buffer', {
     // private
     _saveState: function(html, offset)
     {
+
         var $editor = this.editor.getElement();
 
         this.state = {
@@ -17447,6 +17762,7 @@ $R.add('module', 'buffer', {
 
         $editor.html(buffer[0]);
         this.offset.set(buffer[1]);
+        this._saveState(buffer[0], buffer[1]);
         this.selection.restore();
 
         this.app.broadcast('undo', buffer[0], buffer[1]);
@@ -17464,6 +17780,7 @@ $R.add('module', 'buffer', {
         this._setUndo();
         $editor.html(buffer[0]);
         this.offset.set(buffer[1]);
+        this._saveState(buffer[0], buffer[1]);
 
         this.app.broadcast('redo', buffer[0], buffer[1]);
     },
@@ -17487,6 +17804,7 @@ $R.add('module', 'list', {
     init: function(app)
     {
         this.app = app;
+        this.uuid = app.uuid;
         this.opts = app.opts;
         this.utils = app.utils;
         this.block = app.block;
@@ -17517,7 +17835,7 @@ $R.add('module', 'list', {
     {
         var nodes = this._getBlocks();
         var block = this.selection.getBlock();
-        var $list = $R.dom(block).parents('ul, ol',  '.redactor-in').last();
+        var $list = $R.dom(block).parents('ul, ol',  '.redactor-in-' + this.uuid).last();
         if (nodes.length === 0 && $list.length !== 0)
         {
             nodes = [$list.get()];
@@ -17583,7 +17901,7 @@ $R.add('module', 'list', {
         {
 
             var $listItem = $item.parent();
-            var $liItem = $listItem.closest('li', '.redactor-in');
+            var $liItem = $listItem.closest('li', '.redactor-in-' + this.uuid);
             var $prev = $item.prevElement();
             var $next = $item.nextElement();
             var prev = $prev.get();
@@ -18173,8 +18491,12 @@ $R.add('class', 'widget.component', {
         $R('[data-redactor]');
     });
 
-}());
- Redactor.add("plugin","alignment",{translations:{en:{align:"Align","align-left":"Align Left","align-center":"Align Center","align-right":"Align Right","align-justify":"Align Justify"}},init:function(t){this.app=t,this.opts=t.opts,this.lang=t.lang,this.block=t.block,this.toolbar=t.toolbar},start:function(){var t={};t.left={title:this.lang.get("align-left"),api:"plugin.alignment.set",args:"left"},t.center={title:this.lang.get("align-center"),api:"plugin.alignment.set",args:"center"},t.right={title:this.lang.get("align-right"),api:"plugin.alignment.set",args:"right"},t.justify={title:this.lang.get("align-justify"),api:"plugin.alignment.set",args:"justify"};var i=this.toolbar.addButton("alignment",{title:this.lang.get("align")});i.setIcon('<i class="re-icon-alignment"></i>'),i.setDropdown(t)},set:function(t){if("left"===t&&"ltr"===this.opts.direction)return this._remove();var i={style:{"text-align":t}};this.block.toggle(i)},_remove:function(){this.block.remove({style:"text-align"})}}); Redactor.add("plugin","counter",{translations:{en:{words:"words",chars:"chars"}},init:function(t){this.app=t,this.lang=t.lang,this.utils=t.utils,this.editor=t.editor,this.statusbar=t.statusbar},start:function(){this.editor.getElement().on("keyup.redactor-plugin-counter",this.count.bind(this)),this.count()},stop:function(){this.editor.getElement().off(".redactor-plugin-counter"),this.statusbar.remove("words"),this.statusbar.remove("chars")},count:function(){var t=0,s=0,r=0,e=this.editor.getElement().html();if(""!==(e=this._clean(e))){var a=e.split(/\s+/),i=e.match(/\s/g);t=a?a.length:0,r=i?i.length:0,s=e.length}var n={words:t,characters:s,spaces:r};this.app.broadcast("counter",n),this.statusbar.add("words",this.lang.get("words")+": "+n.words),this.statusbar.add("chars",this.lang.get("chars")+": "+n.characters)},_clean:function(t){return t=(t=(t=(t=(t=(t=(t=t.replace(/<\/(.*?)>/gi," ")).replace(/<(.*?)>/gi,"")).replace(/\t/gi,"")).replace(/\n/gi," ")).replace(/\r/gi," ")).replace(/&nbsp;/g,"1")).trim(),t=this.utils.removeInvisibleChars(t)}}); (function($R)
+    // Export for webpack
+    if (typeof module === 'object' && module.exports) {
+        module.exports = Redactor;
+        module.exports.Redactor = Redactor;
+    }
+}()); Redactor.add("plugin","alignment",{translations:{en:{align:"Align","align-left":"Align Left","align-center":"Align Center","align-right":"Align Right","align-justify":"Align Justify"}},init:function(t){this.app=t,this.opts=t.opts,this.lang=t.lang,this.block=t.block,this.toolbar=t.toolbar},start:function(){var t={};t.left={title:this.lang.get("align-left"),api:"plugin.alignment.set",args:"left"},t.center={title:this.lang.get("align-center"),api:"plugin.alignment.set",args:"center"},t.right={title:this.lang.get("align-right"),api:"plugin.alignment.set",args:"right"},t.justify={title:this.lang.get("align-justify"),api:"plugin.alignment.set",args:"justify"};var i=this.toolbar.addButton("alignment",{title:this.lang.get("align")});i.setIcon('<i class="re-icon-alignment"></i>'),i.setDropdown(t)},set:function(t){if("left"===t&&"ltr"===this.opts.direction)return this._remove();var i={style:{"text-align":t}};this.block.toggle(i)},_remove:function(){this.block.remove({style:"text-align"})}}); Redactor.add("plugin","counter",{translations:{en:{words:"words",chars:"chars"}},init:function(t){this.app=t,this.lang=t.lang,this.utils=t.utils,this.editor=t.editor,this.statusbar=t.statusbar},start:function(){this.editor.getElement().on("keyup.redactor-plugin-counter paste.redactor-plugin-counter",this.count.bind(this)),this.count()},stop:function(){this.editor.getElement().off(".redactor-plugin-counter"),this.statusbar.remove("words"),this.statusbar.remove("chars")},count:function(){var t=0,s=0,r=0,e=this.editor.getElement().html();if(""!==(e=this._clean(e))){var a=e.split(/\s+/),i=e.match(/\s/g);t=a?a.length:0,r=i?i.length:0,s=e.length}var n={words:t,characters:s,spaces:r};this.app.broadcast("counter",n),this.statusbar.add("words",this.lang.get("words")+": "+n.words),this.statusbar.add("chars",this.lang.get("chars")+": "+n.characters)},_clean:function(t){return t=(t=(t=(t=(t=(t=(t=t.replace(/<\/(.*?)>/gi," ")).replace(/<(.*?)>/gi,"")).replace(/\t/gi,"")).replace(/\n/gi," ")).replace(/\r/gi," ")).replace(/&nbsp;/g,"1")).trim(),t=this.utils.removeInvisibleChars(t)}}); (function($R)
 {
     $R.add('plugin', 'filesafe', {
         modals: {
@@ -18244,4 +18566,4 @@ $R.add('class', 'widget.component', {
 
     });
 })(Redactor);
- !function(t){t.add("plugin","fontcolor",{translations:{en:{fontcolor:"Text Color",text:"Text",highlight:"Highlight"}},init:function(t){this.app=t,this.opts=t.opts,this.lang=t.lang,this.inline=t.inline,this.toolbar=t.toolbar,this.selection=t.selection,this.colors=this.opts.fontcolors?this.opts.fontcolors:["#ffffff","#000000","#eeece1","#1f497d","#4f81bd","#c0504d","#9bbb59","#8064a2","#4bacc6","#f79646","#ffff00","#f2f2f2","#7f7f7f","#ddd9c3","#c6d9f0","#dbe5f1","#f2dcdb","#ebf1dd","#e5e0ec","#dbeef3","#fdeada","#fff2ca","#d8d8d8","#595959","#c4bd97","#8db3e2","#b8cce4","#e5b9b7","#d7e3bc","#ccc1d9","#b7dde8","#fbd5b5","#ffe694","#bfbfbf","#3f3f3f","#938953","#548dd4","#95b3d7","#d99694","#c3d69b","#b2a2c7","#b7dde8","#fac08f","#f2c314","#a5a5a5","#262626","#494429","#17365d","#366092","#953734","#76923c","#5f497a","#92cddc","#e36c09","#c09100","#7f7f7f","#0c0c0c","#1d1b10","#0f243e","#244061","#632423","#4f6128","#3f3151","#31859b","#974806","#7f6000"]},onfontcolor:{set:function(t,e){this._set(t,e)},remove:function(t){this._remove(t)}},start:function(){var t={title:this.lang.get("fontcolor")},e=this._buildDropdown();this.$button=this.toolbar.addButton("fontcolor",t),this.$button.setIcon('<i class="re-icon-fontcolor"></i>'),this.$button.setDropdown(e)},_buildDropdown:function(){var e=t.dom('<div class="redactor-dropdown-cells">');return this.$selector=this._buildSelector(),this.$selectorText=this._buildSelectorItem("text",this.lang.get("text")),this.$selectorText.addClass("active"),this.$selectorBack=this._buildSelectorItem("back",this.lang.get("highlight")),this.$selector.append(this.$selectorText),this.$selector.append(this.$selectorBack),this.$pickerText=this._buildPicker("textcolor"),this.$pickerBack=this._buildPicker("backcolor"),e.append(this.$selector),e.append(this.$pickerText),e.append(this.$pickerBack),this._buildSelectorEvents(),e.width(242),e},_buildSelector:function(){var e=t.dom("<div>");return e.addClass("redactor-dropdown-selector"),e},_buildSelectorItem:function(e,o){var i=t.dom("<span>");return i.attr("rel",e).html(o),i.addClass("redactor-dropdown-not-close"),i},_buildSelectorEvents:function(){this.$selectorText.on("mousedown",function(t){t.preventDefault(),this.$selector.find("span").removeClass("active"),this.$pickerBack.hide(),this.$pickerText.show(),this.$selectorText.addClass("active")}.bind(this)),this.$selectorBack.on("mousedown",function(t){t.preventDefault(),this.$selector.find("span").removeClass("active"),this.$pickerText.hide(),this.$pickerBack.show(),this.$selectorBack.addClass("active")}.bind(this))},_buildPicker:function(e){for(var o=t.dom('<div class="re-dropdown-box-'+e+'">'),i="backcolor"==e?"background-color":"color",s=this.colors.length,c=this,r=function(e){e.preventDefault();var o=t.dom(e.target);c._set(o.data("rule"),o.attr("rel"))},n=0;n<s;n++){var d=this.colors[n],l=t.dom("<span>");l.attr({rel:d,"data-rule":i}),l.css({"background-color":d,"font-size":0,border:"2px solid #fff",width:"22px",height:"22px"}),l.on("mousedown",r),o.append(l)}var a=t.dom("<a>");return a.attr({href:"#"}),a.css({display:"block",clear:"both",padding:"8px 5px","font-size":"12px","line-height":1}),a.html(this.lang.get("none")),a.on("click",function(t){t.preventDefault(),c._remove(i)}),o.append(a),"backcolor"==e&&o.hide(),o},_set:function(t,e){var o={};o[t]=e;var i={tag:"span",style:o,type:"toggle"};this.inline.format(i)},_remove:function(t){this.inline.remove({style:t})}})}(Redactor); Redactor.add("plugin","fontfamily",{translations:{en:{fontfamily:"Font","remove-font-family":"Remove Font Family"}},init:function(t){this.app=t,this.opts=t.opts,this.lang=t.lang,this.inline=t.inline,this.toolbar=t.toolbar,this.fonts=this.opts.fontfamily?this.opts.fontfamily:["Arial","Helvetica","Georgia","Times New Roman","Monospace"]},start:function(){for(var t={},i=0;i<this.fonts.length;i++){var n=this.fonts[i];t[i]={title:n.replace(/'/g,""),api:"plugin.fontfamily.set",args:n}}t.remove={title:this.lang.get("remove-font-family"),api:"plugin.fontfamily.remove"};var o=this.toolbar.addButton("fontfamily",{title:this.lang.get("fontfamily")});o.setIcon('<i class="re-icon-fontfamily"></i>'),o.setDropdown(t)},set:function(t){var i={tag:"span",style:{"font-family":t},type:"toggle"};this.inline.format(i)},remove:function(){this.inline.remove({style:"font-family"})}}); !function(i){i.add("plugin","fontsize",{translations:{en:{size:"Size","remove-size":"Remove Font Size"}},init:function(i){this.app=i,this.lang=i.lang,this.inline=i.inline,this.toolbar=i.toolbar,this.sizes=[10,11,12,14,16,18,20,24,28,30]},start:function(){for(var i={},t=0;t<this.sizes.length;t++){var e=this.sizes[t];i[t]={title:e+"px",api:"plugin.fontsize.set",args:e}}i.remove={title:this.lang.get("remove-size"),api:"plugin.fontsize.remove"};var n=this.toolbar.addButton("fontsize",{title:this.lang.get("size")});n.setIcon('<i class="re-icon-fontsize"></i>'),n.setDropdown(i)},set:function(i){var t={tag:"span",style:{"font-size":i+"px"},type:"toggle"};this.inline.format(t)},remove:function(){this.inline.remove({style:"font-size"})}})}(Redactor); !function(t){t.add("plugin","imagemanager",{translations:{en:{choose:"Choose"}},init:function(t){this.app=t,this.lang=t.lang,this.opts=t.opts},onmodal:{image:{open:function(t,a){this.opts.imageManagerJson&&this._load(t)}}},_load:function(a){var i=a.getBody();this.$box=t.dom("<div>"),this.$box.attr("data-title",this.lang.get("choose")),this.$box.addClass("redactor-modal-tab"),this.$box.hide(),this.$box.css({overflow:"auto",height:"300px","line-height":1}),i.append(this.$box),t.ajax.get({url:this.opts.imageManagerJson,success:this._parse.bind(this)})},_parse:function(a){for(var i in a){var o=a[i];if("object"==typeof o){var s=t.dom("<img>"),e=o.thumb?o.thumb:o.url;s.attr("src",e),s.attr("data-params",encodeURI(JSON.stringify(o))),s.css({width:"96px",height:"72px",margin:"0 4px 2px 0",cursor:"pointer"}),s.on("click",this._insert.bind(this)),this.$box.append(s)}}},_insert:function(a){a.preventDefault();var i=t.dom(a.target),o=JSON.parse(decodeURI(i.attr("data-params")));this.app.api("module.image.insert",{image:o})}})}(Redactor); !function(t){t.add("plugin","inlinestyle",{translations:{en:{style:"Style"}},init:function(t){this.app=t,this.lang=t.lang,this.toolbar=t.toolbar,this.styles={marked:{title:"Marked",args:"mark"},code:{title:"Code",args:"code"},variable:{title:"Variable",args:"var"},shortcut:{title:"Shortcut",args:"kbd"},sup:{title:"Superscript",args:"sup"},sub:{title:"Subscript",args:"sub"}}},start:function(){var t={};for(var i in this.styles){var s=this.styles[i];t[i]={title:s.title,api:"module.inline.format",args:s.args}}var a=this.toolbar.addButtonAfter("format","inline",{title:this.lang.get("style")});a.setIcon('<i class="re-icon-inline"></i>'),a.setDropdown(t)}})}(Redactor); !function(a){a.add("plugin","specialchars",{translations:{en:{specialchars:"Special Characters"}},init:function(a){this.app=a,this.lang=a.lang,this.toolbar=a.toolbar,this.insertion=a.insertion,this.chars=["&lsquo;","&rsquo;","&ldquo;","&rdquo;","&ndash;","&mdash;","&divide;","&hellip;","&trade;","&bull;","&rarr;","&asymp;","$","&euro;","&cent;","&pound;","&yen;","&iexcl;","&curren;","&brvbar;","&sect;","&uml;","&copy;","&ordf;","&laquo;","&raquo;","&not;","&reg;","&macr;","&deg;","&sup1;","&sup2;","&sup3;","&acute;","&micro;","&para;","&middot;","&cedil;","&ordm;","&frac14;","&frac12;","&frac34;","&iquest;","&Agrave;","&Aacute;","&Acirc;","&Atilde;","&Auml;","&Aring;","&AElig;","&Ccedil;","&Egrave;","&Eacute;","&Ecirc;","&Euml;","&Igrave;","&Iacute;","&Icirc;","&Iuml;","&ETH;","&Ntilde;","&Ograve;","&Oacute;","&Ocirc;","&Otilde;","&Ouml;","&times;","&Oslash;","&Ugrave;","&Uacute;","&Ucirc;","&Uuml;","&Yacute;","&THORN;","&szlig;","&agrave;","&aacute;","&acirc;","&atilde;","&auml;","&aring;","&aelig;","&ccedil;","&egrave;","&eacute;","&ecirc;","&euml;","&igrave;","&iacute;","&icirc;","&iuml;","&eth;","&ntilde;","&ograve;","&oacute;","&ocirc;","&otilde;","&ouml;","&oslash;","&ugrave;","&uacute;","&ucirc;","&uuml;","&yacute;","&thorn;","&yuml;","&OElig;","&oelig;","&#372;","&#374","&#373","&#375;"]},start:function(){var a={title:this.lang.get("specialchars")},t=this._buildDropdown();this.$button=this.toolbar.addButton("specialchars",a),this.$button.setIcon('<i class="re-icon-specialcharacters"></i>'),this.$button.setDropdown(t)},_set:function(a){this.insertion.insertChar(a)},_buildDropdown:function(){for(var t=this,i=a.dom('<div class="redactor-dropdown-cells">'),r=function(i){i.preventDefault();var r=a.dom(i.target);t._set(r.data("char"))},e=0;e<this.chars.length;e++){var c=a.dom("<a>");c.attr({href:"#","data-char":this.chars[e]}),c.css({"line-height":"32px",width:"32px",height:"32px"}),c.html(this.chars[e]),c.on("click",r),i.append(c)}return i}})}(Redactor); !function(e){e.add("plugin","table",{translations:{en:{table:"Table","insert-table":"Insert table","insert-row-above":"Insert row above","insert-row-below":"Insert row below","insert-column-left":"Insert column left","insert-column-right":"Insert column right","add-head":"Add head","delete-head":"Delete head","delete-column":"Delete column","delete-row":"Delete row","delete-table":"Delete table"}},init:function(e){this.app=e,this.lang=e.lang,this.opts=e.opts,this.caret=e.caret,this.editor=e.editor,this.toolbar=e.toolbar,this.component=e.component,this.inspector=e.inspector,this.insertion=e.insertion,this.selection=e.selection},ondropdown:{table:{observe:function(e){this._observeDropdown(e)}}},onbottomclick:function(){this.insertion.insertToEnd(this.editor.getLastNode(),"table")},start:function(){var e={observe:"table","insert-table":{title:this.lang.get("insert-table"),api:"plugin.table.insert"},"insert-row-above":{title:this.lang.get("insert-row-above"),classname:"redactor-table-item-observable",api:"plugin.table.addRowAbove"},"insert-row-below":{title:this.lang.get("insert-row-below"),classname:"redactor-table-item-observable",api:"plugin.table.addRowBelow"},"insert-column-left":{title:this.lang.get("insert-column-left"),classname:"redactor-table-item-observable",api:"plugin.table.addColumnLeft"},"insert-column-right":{title:this.lang.get("insert-column-right"),classname:"redactor-table-item-observable",api:"plugin.table.addColumnRight"},"add-head":{title:this.lang.get("add-head"),classname:"redactor-table-item-observable",api:"plugin.table.addHead"},"delete-head":{title:this.lang.get("delete-head"),classname:"redactor-table-item-observable",api:"plugin.table.deleteHead"},"delete-column":{title:this.lang.get("delete-column"),classname:"redactor-table-item-observable",api:"plugin.table.deleteColumn"},"delete-row":{title:this.lang.get("delete-row"),classname:"redactor-table-item-observable",api:"plugin.table.deleteRow"},"delete-table":{title:this.lang.get("delete-table"),classname:"redactor-table-item-observable",api:"plugin.table.deleteTable"}},t={title:this.lang.get("table")},n=this.toolbar.addButtonBefore("link","table",t);n.setIcon('<i class="re-icon-table"></i>'),n.setDropdown(e)},insert:function(){for(var e=this.component.create("table"),t=0;t<2;t++)e.addRow(3);e=this.insertion.insertHtml(e),this.caret.setStart(e)},addRowAbove:function(){var e=this._getComponent();if(e){var t=this.selection.getCurrent(),n=e.addRowTo(t,"before");this.caret.setStart(n)}},addRowBelow:function(){var e=this._getComponent();if(e){var t=this.selection.getCurrent(),n=e.addRowTo(t,"after");this.caret.setStart(n)}},addColumnLeft:function(){var e=this._getComponent();if(e){var t=this.selection.getCurrent();this.selection.save(),e.addColumnTo(t,"left"),this.selection.restore()}},addColumnRight:function(){var e=this._getComponent();if(e){var t=this.selection.getCurrent();this.selection.save(),e.addColumnTo(t,"right"),this.selection.restore()}},addHead:function(){var e=this._getComponent();e&&(this.selection.save(),e.addHead(),this.selection.restore())},deleteHead:function(){var t=this._getComponent();if(t){var n=this.selection.getCurrent();0!==e.dom(n).closest("thead").length?(t.removeHead(),this.caret.setStart(t)):(this.selection.save(),t.removeHead(),this.selection.restore())}},deleteColumn:function(){var t=this._getComponent();if(t){var n=this.selection.getCurrent(),i=e.dom(n).closest("td, th"),o=i.nextElement().get(),a=i.prevElement().get();t.removeColumn(n),o?this.caret.setStart(o):a?this.caret.setEnd(a):this.deleteTable()}},deleteRow:function(){var t=this._getComponent();if(t){var n=this.selection.getCurrent(),i=e.dom(n).closest("tr"),o=i.nextElement().get(),a=i.prevElement().get();t.removeRow(n),o?this.caret.setStart(o):a?this.caret.setEnd(a):this.deleteTable()}},deleteTable:function(){var e=this._getTable();e&&this.component.remove(e)},_getTable:function(){var e=this.selection.getCurrent(),t=this.inspector.parse(e);if(t.isTable())return t.getTable()},_getComponent:function(){var e=this.selection.getCurrent(),t=this.inspector.parse(e);if(t.isTable()){var n=t.getTable();return this.component.create("table",n)}},_observeDropdown:function(e){var t=this._getTable(),n=e.getItemsByClass("redactor-table-item-observable"),i=e.getItem("insert-table");t?(this._observeItems(n,"enable"),i.disable()):(this._observeItems(n,"disable"),i.enable())},_observeItems:function(e,t){for(var n=0;n<e.length;n++)e[n][t]()}})}(Redactor),function(e){e.add("class","table.component",{mixins:["dom","component"],init:function(e,t){return this.app=e,t&&void 0!==t.cmnt?t:this._init(t)},addHead:function(){this.removeHead();var t=this.$element.find("tr").first().children("td, th").length,n=e.dom("<thead>"),i=this._buildRow(t,"<th>");n.append(i),this.$element.prepend(n)},addRow:function(e){var t=this._buildRow(e);return this.$element.append(t),t},addRowTo:function(e,t){return this._addRowTo(e,t)},addColumnTo:function(t,n){var i=e.dom(t),o=i.closest("tr"),a=i.closest("td, th"),r=0;o.find("td, th").each(function(e,t){e===a.get()&&(r=t)}),this.$element.find("tr").each(function(t){var i=e.dom(t).find("td, th").get(r),o=e.dom(i),a=o.clone();a.html(""),"right"===n?o.after(a):o.before(a)})},removeHead:function(){var e=this.$element.find("thead");0!==e.length&&e.remove()},removeRow:function(t){e.dom(t).closest("tr").remove()},removeColumn:function(t){var n=e.dom(t),i=n.closest("tr"),o=n.closest("td, th"),a=0;i.find("td, th").each(function(e,t){e===o.get()&&(a=t)}),this.$element.find("tr").each(function(t){var n=e.dom(t).find("td, th").get(a);e.dom(n).remove()})},_init:function(t){var n,i;if(void 0!==t){var o=e.dom(t),a=o.get(),r=o.closest("figure");0!==r.length?(n=r,i=r.find("table").get()):"TABLE"===a.tagName&&(i=a)}this._buildWrapper(n),this._buildElement(i),this._initWrapper()},_addRowTo:function(t,n){var i=e.dom(t).closest("tr");if(0!==i.length){var o=i.children("td, th").length,a=this._buildRow(o);return i[n](a),a}},_buildRow:function(t,n){n=n||"<td>";for(var i=e.dom("<tr>"),o=0;o<t;o++){var a=e.dom(n);a.attr("contenteditable",!0),i.append(a)}return i},_buildElement:function(t){t?this.$element=e.dom(t):(this.$element=e.dom("<table>"),this.append(this.$element))},_buildWrapper:function(e){e=e||"<figure>",this.parse(e)},_initWrapper:function(){this.addClass("redactor-component"),this.attr({"data-redactor-type":"table",tabindex:"-1",contenteditable:!1}),this.app.detector.isIe()&&this.removeAttr("contenteditable")}})}(Redactor); Redactor.add("plugin","textdirection",{translations:{en:{"change-text-direction":"RTL-LTR","left-to-right":"Left to Right","right-to-left":"Right to Left"}},init:function(t){this.app=t,this.lang=t.lang,this.block=t.block,this.toolbar=t.toolbar},start:function(){var t={};t.ltr={title:this.lang.get("left-to-right"),api:"plugin.textdirection.set",args:"ltr"},t.rtl={title:this.lang.get("right-to-left"),api:"plugin.textdirection.set",args:"rtl"};var i=this.toolbar.addButton("textdirection",{title:this.lang.get("change-text-direction")});i.setIcon('<i class="re-icon-textdirection"></i>'),i.setDropdown(t)},set:function(t){this.block.add({attr:{dir:t}})}}); Redactor.add("plugin","textexpander",{init:function(e){this.app=e,this.opts=e.opts,this.utils=e.utils,this.editor=e.editor,this.marker=e.marker,this.keycodes=e.keycodes,this.selection=e.selection},start:function(){this.opts.textexpander&&this.editor.getElement().on("keyup.redactor-plugin-textexpander",this._expand.bind(this))},stop:function(){this.editor.getElement().off(".redactor-plugin-textexpander")},_expand:function(e){if(e.which===this.keycodes.SPACE)for(var t=this.opts.textexpander.length,i=0;i<t;i++){var s=this.opts.textexpander[i],n=new RegExp(this.utils.escapeRegExp(s[0])+"\\s$"),r=this.selection.getTextBeforeCaret(s[0].length+1).replace(/\s$/,"");if(s[0]===r)return this._replaceSelection(n,s[1])}},_replaceSelection:function(e,t){var i=this.marker.insert("start").previousSibling,s=i.textContent;s=(s=s.replace(/&nbsp;/," ")).replace(e,t),i.textContent=s,this.selection.restoreMarkers()}}); !function(t){t.add("plugin","variable",{translations:{en:{change:"Change",variable:"Variable","variable-select":"Please, select a variable"}},modals:{variable:""},init:function(t){this.app=t,this.lang=t.lang,this.opts=t.opts,this.toolbar=t.toolbar,this.component=t.component,this.insertion=t.insertion,this.inspector=t.inspector,this.selection=t.selection},onmodal:{variable:{open:function(t,e){this._build(t)}}},oncontextbar:function(t,e){var i=this.inspector.parse(t.target);if(i.isComponentType("variable")){var a=i.getComponent(),n={change:{title:this.lang.get("change"),api:"plugin.variable.open",args:a},remove:{title:this.lang.get("delete"),api:"plugin.variable.remove",args:a}};e.set(t,a,n,"bottom")}},start:function(){if(this.opts.variables){var t={title:this.lang.get("variable"),api:"plugin.variable.open"},e=this.toolbar.addButton("variable",t);e.setIcon('<i class="re-icon-variable"></i>')}},open:function(){var t={title:this.lang.get("variable"),width:"600px",name:"variable"};this.$currentItem=this._getCurrent(),this.app.api("module.modal.build",t)},insert:function(t){this.app.api("module.modal.close");var e=t.attr("data-type"),i=this.component.create("variable");i.html(e),this.insertion.insertRaw(i)},remove:function(t){this.component.remove(t)},_getCurrent:function(){var t=this.selection.getCurrent(),e=this.inspector.parse(t);return e.isComponentType("variable")?this.component.build(e.getComponent()):void 0},_build:function(t){var e=t.getBody(),i=this._buildLabel(),a=this._buildList();this._buildItems(a),e.html(""),e.append(i),e.append(a)},_buildLabel:function(){var e=t.dom("<label>");return e.html(this.lang.parse("## variable-select ##:")),e},_buildList:function(){var e=t.dom("<ul>");return e.addClass("redactor-variables-list"),e},_buildItems:function(e){for(var i=this._getCurrentType(),a=this.opts.variables,n=0;n<a.length;n++){var r=a[n].trim(),s=t.dom("<li>"),o=t.dom("<span>");o.attr("data-type",r),o.html(r),o.on("click",this._toggle.bind(this)),i===r&&o.addClass("redactor-variables-item-selected"),s.append(o),e.append(s)}},_getCurrentType:function(){if(this.$currentItem){var t=this.$currentItem.getData();return t.type}return!1},_toggle:function(e){var i=t.dom(e.target);this.app.api("plugin.variable.insert",i)}})}(Redactor),function(t){t.add("class","variable.component",{mixins:["dom","component"],init:function(t,e){return this.app=t,this.utils=t.utils,e&&void 0!==e.cmnt?e:this._init(e)},getData:function(){return{type:this._getType()}},_init:function(t){t=t||"<span>",this.parse(t),this._initWrapper()},_getType:function(){var t=this.text().trim();return this.utils.removeInvisibleChars(t)},_initWrapper:function(){this.addClass("redactor-component"),this.attr({"data-redactor-type":"variable",tabindex:"-1",contenteditable:!1})}})}(Redactor);
+ !function(a){a.add("plugin","fontcolor",{translations:{en:{fontcolor:"Text Color",text:"Text",highlight:"Highlight"}},init:function(t){this.app=t,this.opts=t.opts,this.lang=t.lang,this.inline=t.inline,this.toolbar=t.toolbar,this.selection=t.selection,this.colors=this.opts.fontcolors?this.opts.fontcolors:["#ffffff","#000000","#eeece1","#1f497d","#4f81bd","#c0504d","#9bbb59","#8064a2","#4bacc6","#f79646","#ffff00","#f2f2f2","#7f7f7f","#ddd9c3","#c6d9f0","#dbe5f1","#f2dcdb","#ebf1dd","#e5e0ec","#dbeef3","#fdeada","#fff2ca","#d8d8d8","#595959","#c4bd97","#8db3e2","#b8cce4","#e5b9b7","#d7e3bc","#ccc1d9","#b7dde8","#fbd5b5","#ffe694","#bfbfbf","#3f3f3f","#938953","#548dd4","#95b3d7","#d99694","#c3d69b","#b2a2c7","#b7dde8","#fac08f","#f2c314","#a5a5a5","#262626","#494429","#17365d","#366092","#953734","#76923c","#5f497a","#92cddc","#e36c09","#c09100","#7f7f7f","#0c0c0c","#1d1b10","#0f243e","#244061","#632423","#4f6128","#3f3151","#31859b","#974806","#7f6000"]},onfontcolor:{set:function(t,e){this._set(t,e)},remove:function(t){this._remove(t)}},start:function(){var t={title:this.lang.get("fontcolor")},e=this._buildDropdown();this.$button=this.toolbar.addButton("fontcolor",t),this.$button.setIcon('<i class="re-icon-fontcolor"></i>'),this.$button.setDropdown(e)},_buildDropdown:function(){var t=a.dom('<div class="redactor-dropdown-cells">');return this.$selector=this._buildSelector(),this.$selectorText=this._buildSelectorItem("text",this.lang.get("text")),this.$selectorText.addClass("active"),this.$selectorBack=this._buildSelectorItem("back",this.lang.get("highlight")),this.$selector.append(this.$selectorText),this.$selector.append(this.$selectorBack),this.$pickerText=this._buildPicker("textcolor"),this.$pickerBack=this._buildPicker("backcolor"),t.append(this.$selector),t.append(this.$pickerText),t.append(this.$pickerBack),this._buildSelectorEvents(),t.width(242),t},_buildSelector:function(){var t=a.dom("<div>");return t.addClass("redactor-dropdown-selector"),t},_buildSelectorItem:function(t,e){var o=a.dom("<span>");return o.attr("rel",t).html(e),o.addClass("redactor-dropdown-not-close"),o},_buildSelectorEvents:function(){this.$selectorText.on("mousedown",function(t){t.preventDefault(),this.$selector.find("span").removeClass("active"),this.$pickerBack.hide(),this.$pickerText.show(),this.$selectorText.addClass("active")}.bind(this)),this.$selectorBack.on("mousedown",function(t){t.preventDefault(),this.$selector.find("span").removeClass("active"),this.$pickerText.hide(),this.$pickerBack.show(),this.$selectorBack.addClass("active")}.bind(this))},_buildPicker:function(t){function e(t){t.preventDefault();var e=a.dom(t.target);c._set(e.data("rule"),e.attr("rel"))}for(var o=a.dom('<div class="re-dropdown-box-'+t+'">'),i="backcolor"==t?"background-color":"color",s=this.colors.length,c=this,r=0;r<s;r++){var n=this.colors[r],d=a.dom("<span>");d.attr({rel:n,"data-rule":i}),d.css({"background-color":n,"font-size":0,border:"2px solid #fff",width:"22px",height:"22px"}),d.on("mousedown",e),o.append(d)}var l=a.dom("<a>");return l.attr({href:"#"}),l.css({display:"block",clear:"both",padding:"8px 5px","font-size":"12px","line-height":1}),l.html(this.lang.get("none")),l.on("click",function(t){t.preventDefault(),c._remove(i)}),o.append(l),"backcolor"==t&&o.hide(),o},_set:function(t,e){var o={};o[t]=e;var i={tag:"span",style:o,type:"toggle"};this.inline.format(i)},_remove:function(t){this.inline.remove({style:t})}})}(Redactor); Redactor.add("plugin","fontfamily",{translations:{en:{fontfamily:"Font","remove-font-family":"Remove Font Family"}},init:function(t){this.app=t,this.opts=t.opts,this.lang=t.lang,this.inline=t.inline,this.toolbar=t.toolbar,this.fonts=this.opts.fontfamily?this.opts.fontfamily:["Arial","Helvetica","Georgia","Times New Roman","Monospace"]},start:function(){for(var t={},i=0;i<this.fonts.length;i++){var n=this.fonts[i];t[i]={title:n.replace(/'/g,""),api:"plugin.fontfamily.set",args:n}}t.remove={title:this.lang.get("remove-font-family"),api:"plugin.fontfamily.remove"};var o=this.toolbar.addButton("fontfamily",{title:this.lang.get("fontfamily")});o.setIcon('<i class="re-icon-fontfamily"></i>'),o.setDropdown(t)},set:function(t){var i={tag:"span",style:{"font-family":t},type:"toggle"};this.inline.format(i)},remove:function(){this.inline.remove({style:"font-family"})}}); Redactor.add("plugin","fontsize",{translations:{en:{size:"Size","remove-size":"Remove Font Size"}},init:function(i){this.app=i,this.lang=i.lang,this.inline=i.inline,this.toolbar=i.toolbar,this.sizes=[10,11,12,14,16,18,20,24,28,30]},start:function(){for(var i={},t=0;t<this.sizes.length;t++){var e=this.sizes[t];i[t]={title:e+"px",api:"plugin.fontsize.set",args:e}}i.remove={title:this.lang.get("remove-size"),api:"plugin.fontsize.remove"};var s=this.toolbar.addButton("fontsize",{title:this.lang.get("size")});s.setIcon('<i class="re-icon-fontsize"></i>'),s.setDropdown(i)},set:function(i){var t={tag:"span",style:{"font-size":i+"px"},type:"toggle"};this.inline.format(t)},remove:function(){this.inline.remove({style:"font-size"})}}); !function(e){e.add("plugin","imagemanager",{translations:{en:{choose:"Choose"}},init:function(t){this.app=t,this.lang=t.lang,this.opts=t.opts},onmodal:{image:{open:function(t,a){this.opts.imageManagerJson&&this._load(t)}}},_load:function(t){var a=t.getBody();this.$box=e.dom("<div>"),this.$box.attr("data-title",this.lang.get("choose")),this.$box.addClass("redactor-modal-tab"),this.$box.hide(),this.$box.css({overflow:"auto",height:"300px","line-height":1}),a.append(this.$box),e.ajax.get({url:this.opts.imageManagerJson,success:this._parse.bind(this)})},_parse:function(t){for(var a in t){var i=t[a];if("object"==typeof i){var o=e.dom("<img>"),s=i.thumb?i.thumb:i.url;o.attr("src",s),o.attr("data-params",encodeURI(JSON.stringify(i))),o.css({width:"96px",height:"72px",margin:"0 4px 2px 0",cursor:"pointer"}),o.on("click",this._insert.bind(this)),this.$box.append(o)}}},_insert:function(t){t.preventDefault();var a=e.dom(t.target),i=JSON.parse(decodeURI(a.attr("data-params")));this.app.api("module.image.insert",{image:i})}})}(Redactor); Redactor.add("plugin","inlinestyle",{translations:{en:{style:"Style"}},init:function(t){this.app=t,this.lang=t.lang,this.toolbar=t.toolbar,this.styles={marked:{title:"Marked",args:"mark"},code:{title:"Code",args:"code"},variable:{title:"Variable",args:"var"},shortcut:{title:"Shortcut",args:"kbd"},sup:{title:"Superscript",args:"sup"},sub:{title:"Subscript",args:"sub"}}},start:function(){var t={};for(var i in this.styles){var s=this.styles[i];t[i]={title:s.title,api:"module.inline.format",args:s.args}}var a=this.toolbar.addButtonAfter("format","inline",{title:this.lang.get("style")});a.setIcon('<i class="re-icon-inline"></i>'),a.setDropdown(t)}}); !function(c){c.add("plugin","specialchars",{translations:{en:{specialchars:"Special Characters"}},init:function(a){this.app=a,this.lang=a.lang,this.toolbar=a.toolbar,this.insertion=a.insertion,this.chars=["&lsquo;","&rsquo;","&ldquo;","&rdquo;","&ndash;","&mdash;","&divide;","&hellip;","&trade;","&bull;","&rarr;","&asymp;","$","&euro;","&cent;","&pound;","&yen;","&iexcl;","&curren;","&brvbar;","&sect;","&uml;","&copy;","&ordf;","&laquo;","&raquo;","&not;","&reg;","&macr;","&deg;","&sup1;","&sup2;","&sup3;","&acute;","&micro;","&para;","&middot;","&cedil;","&ordm;","&frac14;","&frac12;","&frac34;","&iquest;","&Agrave;","&Aacute;","&Acirc;","&Atilde;","&Auml;","&Aring;","&AElig;","&Ccedil;","&Egrave;","&Eacute;","&Ecirc;","&Euml;","&Igrave;","&Iacute;","&Icirc;","&Iuml;","&ETH;","&Ntilde;","&Ograve;","&Oacute;","&Ocirc;","&Otilde;","&Ouml;","&times;","&Oslash;","&Ugrave;","&Uacute;","&Ucirc;","&Uuml;","&Yacute;","&THORN;","&szlig;","&agrave;","&aacute;","&acirc;","&atilde;","&auml;","&aring;","&aelig;","&ccedil;","&egrave;","&eacute;","&ecirc;","&euml;","&igrave;","&iacute;","&icirc;","&iuml;","&eth;","&ntilde;","&ograve;","&oacute;","&ocirc;","&otilde;","&ouml;","&oslash;","&ugrave;","&uacute;","&ucirc;","&uuml;","&yacute;","&thorn;","&yuml;","&OElig;","&oelig;","&#372;","&#374","&#373","&#375;"]},start:function(){var a={title:this.lang.get("specialchars")},t=this._buildDropdown();this.$button=this.toolbar.addButton("specialchars",a),this.$button.setIcon('<i class="re-icon-specialcharacters"></i>'),this.$button.setDropdown(t)},_set:function(a){this.insertion.insertChar(a)},_buildDropdown:function(){function a(a){a.preventDefault();var t=c.dom(a.target);i._set(t.data("char"))}for(var i=this,t=c.dom('<div class="redactor-dropdown-cells">'),r=0;r<this.chars.length;r++){var e=c.dom("<a>");e.attr({href:"#","data-char":this.chars[r]}),e.css({"line-height":"32px",width:"32px",height:"32px"}),e.html(this.chars[r]),e.on("click",a),t.append(e)}return t}})}(Redactor); !function(a){a.add("plugin","table",{translations:{en:{table:"Table","insert-table":"Insert table","insert-row-above":"Insert row above","insert-row-below":"Insert row below","insert-column-left":"Insert column left","insert-column-right":"Insert column right","add-head":"Add head","delete-head":"Delete head","delete-column":"Delete column","delete-row":"Delete row","delete-table":"Delete table"}},init:function(e){this.app=e,this.lang=e.lang,this.opts=e.opts,this.caret=e.caret,this.editor=e.editor,this.toolbar=e.toolbar,this.component=e.component,this.inspector=e.inspector,this.insertion=e.insertion,this.selection=e.selection},ondropdown:{table:{observe:function(e){this._observeDropdown(e)}}},onbottomclick:function(){this.insertion.insertToEnd(this.editor.getLastNode(),"table")},start:function(){var e={observe:"table","insert-table":{title:this.lang.get("insert-table"),api:"plugin.table.insert"},"insert-row-above":{title:this.lang.get("insert-row-above"),classname:"redactor-table-item-observable",api:"plugin.table.addRowAbove"},"insert-row-below":{title:this.lang.get("insert-row-below"),classname:"redactor-table-item-observable",api:"plugin.table.addRowBelow"},"insert-column-left":{title:this.lang.get("insert-column-left"),classname:"redactor-table-item-observable",api:"plugin.table.addColumnLeft"},"insert-column-right":{title:this.lang.get("insert-column-right"),classname:"redactor-table-item-observable",api:"plugin.table.addColumnRight"},"add-head":{title:this.lang.get("add-head"),classname:"redactor-table-item-observable",api:"plugin.table.addHead"},"delete-head":{title:this.lang.get("delete-head"),classname:"redactor-table-item-observable",api:"plugin.table.deleteHead"},"delete-column":{title:this.lang.get("delete-column"),classname:"redactor-table-item-observable",api:"plugin.table.deleteColumn"},"delete-row":{title:this.lang.get("delete-row"),classname:"redactor-table-item-observable",api:"plugin.table.deleteRow"},"delete-table":{title:this.lang.get("delete-table"),classname:"redactor-table-item-observable",api:"plugin.table.deleteTable"}},t={title:this.lang.get("table")},n=this.toolbar.addButtonBefore("link","table",t);n.setIcon('<i class="re-icon-table"></i>'),n.setDropdown(e)},insert:function(){for(var e=this.component.create("table"),t=0;t<2;t++)e.addRow(3);e=this.insertion.insertHtml(e),this.caret.setStart(e)},addRowAbove:function(){var e=this._getComponent();if(e){var t=this.selection.getCurrent(),n=e.addRowTo(t,"before");this.caret.setStart(n)}},addRowBelow:function(){var e=this._getComponent();if(e){var t=this.selection.getCurrent(),n=e.addRowTo(t,"after");this.caret.setStart(n)}},addColumnLeft:function(){var e=this._getComponent();if(e){var t=this.selection.getCurrent();this.selection.save(),e.addColumnTo(t,"left"),this.selection.restore()}},addColumnRight:function(){var e=this._getComponent();if(e){var t=this.selection.getCurrent();this.selection.save(),e.addColumnTo(t,"right"),this.selection.restore()}},addHead:function(){var e=this._getComponent();e&&(this.selection.save(),e.addHead(),this.selection.restore())},deleteHead:function(){var e=this._getComponent();if(e){var t=this.selection.getCurrent();0!==a.dom(t).closest("thead").length?(e.removeHead(),this.caret.setStart(e)):(this.selection.save(),e.removeHead(),this.selection.restore())}},deleteColumn:function(){var e=this._getComponent();if(e){var t=this.selection.getCurrent(),n=a.dom(t).closest("td, th"),i=n.nextElement().get(),o=n.prevElement().get();e.removeColumn(t),i?this.caret.setStart(i):o?this.caret.setEnd(o):this.deleteTable()}},deleteRow:function(){var e=this._getComponent();if(e){var t=this.selection.getCurrent(),n=a.dom(t).closest("tr"),i=n.nextElement().get(),o=n.prevElement().get();e.removeRow(t),i?this.caret.setStart(i):o?this.caret.setEnd(o):this.deleteTable()}},deleteTable:function(){var e=this._getTable();e&&this.component.remove(e)},_getTable:function(){var e=this.selection.getCurrent(),t=this.inspector.parse(e);if(t.isTable())return t.getTable()},_getComponent:function(){var e=this.selection.getCurrent(),t=this.inspector.parse(e);if(t.isTable()){var n=t.getTable();return this.component.create("table",n)}},_observeDropdown:function(e){var t=this._getTable(),n=e.getItemsByClass("redactor-table-item-observable"),i=e.getItem("insert-table");t?(this._observeItems(n,"enable"),i.disable()):(this._observeItems(n,"disable"),i.enable())},_observeItems:function(e,t){for(var n=0;n<e.length;n++)e[n][t]()}})}(Redactor),function(r){r.add("class","table.component",{mixins:["dom","component"],init:function(e,t){return this.app=e,t&&void 0!==t.cmnt?t:this._init(t)},addHead:function(){this.removeHead();var e=this.$element.find("tr").first().children("td, th").length,t=r.dom("<thead>"),n=this._buildRow(e,"<th>");t.append(n),this.$element.prepend(t)},addRow:function(e){var t=this._buildRow(e);return this.$element.append(t),t},addRowTo:function(e,t){return this._addRowTo(e,t)},addColumnTo:function(e,o){var t=r.dom(e),n=t.closest("tr"),i=t.closest("td, th"),a=0;n.find("td, th").each(function(e,t){e===i.get()&&(a=t)}),this.$element.find("tr").each(function(e){var t=r.dom(e).find("td, th").get(a),n=r.dom(t),i=n.clone();i.html('<div data-redactor-tag="tbr"></div>'),"right"===o?n.after(i):n.before(i)})},removeHead:function(){var e=this.$element.find("thead");0!==e.length&&e.remove()},removeRow:function(e){r.dom(e).closest("tr").remove()},removeColumn:function(e){var t=r.dom(e),n=t.closest("tr"),i=t.closest("td, th"),o=0;n.find("td, th").each(function(e,t){e===i.get()&&(o=t)}),this.$element.find("tr").each(function(e){var t=r.dom(e).find("td, th").get(o);r.dom(t).remove()})},_init:function(e){var t,n;if(void 0!==e){var i=r.dom(e),o=i.get(),a=i.closest("figure");0!==a.length?n=(t=a).find("table").get():"TABLE"===o.tagName&&(n=o)}this._buildWrapper(t),this._buildElement(n),this._initWrapper()},_addRowTo:function(e,t){var n=r.dom(e).closest("tr");if(0!==n.length){var i=n.children("td, th").length,o=this._buildRow(i);return n[t](o),o}},_buildRow:function(e,t){t=t||"<td>";for(var n=r.dom("<tr>"),i=0;i<e;i++){var o=r.dom(t);o.attr("contenteditable",!0),o.html('<div data-redactor-tag="tbr"></div>'),n.append(o)}return n},_buildElement:function(e){e?this.$element=r.dom(e):(this.$element=r.dom("<table>"),this.append(this.$element))},_buildWrapper:function(e){e=e||"<figure>",this.parse(e)},_initWrapper:function(){this.addClass("redactor-component"),this.attr({"data-redactor-type":"table",tabindex:"-1",contenteditable:!1}),this.app.detector.isIe()&&this.removeAttr("contenteditable")}})}(Redactor); !function(o){o.add("plugin","textdirection",{translations:{en:{"change-text-direction":"RTL-LTR","left-to-right":"Left to Right","right-to-left":"Right to Left"}},init:function(t){this.app=t,this.lang=t.lang,this.block=t.block,this.toolbar=t.toolbar,this.selection=t.selection},start:function(){var t={};t.ltr={title:this.lang.get("left-to-right"),api:"plugin.textdirection.set",args:"ltr"},t.rtl={title:this.lang.get("right-to-left"),api:"plugin.textdirection.set",args:"rtl"};var i=this.toolbar.addButton("textdirection",{title:this.lang.get("change-text-direction")});i.setIcon('<i class="re-icon-textdirection"></i>'),i.setDropdown(t)},set:function(t){var i=this.selection.getBlock();if(i&&"LI"===i.tagName){var e=o.dom(i).parents("ul, ol",".redactor-in").last();this.block.add({attr:{dir:t}},!1,e)}else this.block.add({attr:{dir:t}})}})}(Redactor); Redactor.add("plugin","textexpander",{init:function(e){this.app=e,this.opts=e.opts,this.utils=e.utils,this.editor=e.editor,this.marker=e.marker,this.keycodes=e.keycodes,this.selection=e.selection},start:function(){this.opts.textexpander&&this.editor.getElement().on("keyup.redactor-plugin-textexpander",this._expand.bind(this))},stop:function(){this.editor.getElement().off(".redactor-plugin-textexpander")},_expand:function(e){if(e.which===this.keycodes.SPACE)for(var t=this.opts.textexpander.length,i=0;i<t;i++){var s=this.opts.textexpander[i],n=new RegExp(this.utils.escapeRegExp(s[0])+"\\s$"),r=this.selection.getTextBeforeCaret(s[0].length+1).replace(/\s$/,"");if(s[0]===r)return this._replaceSelection(n,s[1])}},_replaceSelection:function(e,t){var i=this.marker.insert("start").previousSibling,s=i.textContent;s=(s=s.replace(/&nbsp;/," ")).replace(e,t),i.textContent=s,this.selection.restoreMarkers()}}); !function(o){o.add("plugin","variable",{translations:{en:{change:"Change",variable:"Variable","variable-select":"Please, select a variable"}},modals:{variable:""},init:function(t){this.app=t,this.lang=t.lang,this.opts=t.opts,this.toolbar=t.toolbar,this.component=t.component,this.insertion=t.insertion,this.inspector=t.inspector,this.selection=t.selection},onmodal:{variable:{open:function(t,e){this._build(t)}}},oncontextbar:function(t,e){var i=this.inspector.parse(t.target);if(i.isComponentType("variable")){var a=i.getComponent(),n={change:{title:this.lang.get("change"),api:"plugin.variable.open",args:a},remove:{title:this.lang.get("delete"),api:"plugin.variable.remove",args:a}};e.set(t,a,n,"bottom")}},start:function(){if(this.opts.variables){var t={title:this.lang.get("variable"),api:"plugin.variable.open"};this.toolbar.addButton("variable",t).setIcon('<i class="re-icon-variable"></i>')}},open:function(){var t={title:this.lang.get("variable"),width:"600px",name:"variable"};this.$currentItem=this._getCurrent(),this.app.api("module.modal.build",t)},insert:function(t){this.app.api("module.modal.close");var e=t.attr("data-type"),i=this.component.create("variable");i.html(e),this.insertion.insertRaw(i)},remove:function(t){this.component.remove(t)},_getCurrent:function(){var t=this.selection.getCurrent(),e=this.inspector.parse(t);if(e.isComponentType("variable"))return this.component.build(e.getComponent())},_build:function(t){var e=t.getBody(),i=this._buildLabel(),a=this._buildList();this._buildItems(a),e.html(""),e.append(i),e.append(a)},_buildLabel:function(){var t=o.dom("<label>");return t.html(this.lang.parse("## variable-select ##:")),t},_buildList:function(){var t=o.dom("<ul>");return t.addClass("redactor-variables-list"),t},_buildItems:function(t){for(var e=this._getCurrentType(),i=this.opts.variables,a=0;a<i.length;a++){var n=i[a].trim(),r=o.dom("<li>"),s=o.dom("<span>");s.attr("data-type",n),s.html(n),s.on("click",this._toggle.bind(this)),e===n&&s.addClass("redactor-variables-item-selected"),r.append(s),t.append(r)}},_getCurrentType:function(){return!!this.$currentItem&&this.$currentItem.getData().type},_toggle:function(t){var e=o.dom(t.target);this.app.api("plugin.variable.insert",e)}})}(Redactor),Redactor.add("class","variable.component",{mixins:["dom","component"],init:function(t,e){return this.app=t,this.utils=t.utils,e&&void 0!==e.cmnt?e:this._init(e)},getData:function(){return{type:this._getType()}},_init:function(t){t=t||"<span>",this.parse(t),this._initWrapper()},_getType:function(){var t=this.text().trim();return this.utils.removeInvisibleChars(t)},_initWrapper:function(){this.addClass("redactor-component"),this.attr({"data-redactor-type":"variable",tabindex:"-1",contenteditable:!1})}});
