@@ -1,18 +1,18 @@
-module.exports = function(grunt) {
+module.exports = function (grunt) {
   grunt.initConfig({
 
-     concat: {
-       options: {
-         separator: ' ',
-       },
+    concat: {
+      options: {
+        separator: ' ',
+      },
 
-       redactor: {
-         src: [
-           'redactor/src/redactor.js',
-           'redactor/plugins/**/*.min.js'
-         ],
-         dest: 'dist/redactor.js',
-       },
+      redactor: {
+        src: [
+          'redactor/src/redactor.js',
+          'redactor/plugins/**/*.min.js'
+        ],
+        dest: 'dist/redactor.js',
+      },
 
       dist: {
         src: [
@@ -23,22 +23,22 @@ module.exports = function(grunt) {
         dest: 'dist/dist.min.js',
       },
 
-       css: {
-         src: [
-           'redactor/src/redactor.min.css',
-           'dist/app.css',
-           'redactor/plugins/inlinestyle/inlinestyle.min.css',
-           'node_modules/filesafe-embed/dist/dist.css'
-         ],
-         dest: 'dist/dist.css'
-       }
-     },
+      css: {
+        src: [
+          'redactor/src/redactor.min.css',
+          'dist/app.css',
+          'redactor/plugins/inlinestyle/inlinestyle.min.css',
+          'node_modules/filesafe-embed/dist/dist.css'
+        ],
+        dest: 'dist/dist.css'
+      }
+    },
 
-     terser: {
-       redactor: {
-         src: ['dist/redactor.js'],
-         dest: 'dist/redactor.min.js'
-       }
+    terser: {
+      redactor: {
+        src: ['dist/redactor.js'],
+        dest: 'dist/redactor.min.js'
+      }
     },
 
   });
