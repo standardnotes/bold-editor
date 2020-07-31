@@ -168,6 +168,12 @@ export default class Editor extends React.Component {
         'Arial', 'Helvetica', 'Georgia', 'Times New Roman', 'Trebuchet MS',
         'Monospace'
       ],
+      shortcutsAdd: {
+        'ctrl+shift+s, meta+shift+s': {
+          func: 'module.inline.format',
+          params: ['del']
+        }
+      },
       callbacks: {
         changed: (html) => {
           // I think it's already cleaned so we don't need to do this.
