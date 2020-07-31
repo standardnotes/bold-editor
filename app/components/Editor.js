@@ -127,11 +127,6 @@ export default class Editor extends React.Component {
         // Editor note, or when uploading files, maybe in more places too.
         const cleaned = this.redactor.cleaner.input(rawText);
         $R('#editor', 'source.setCode', cleaned);
-
-        // "Set the focus to the editor layer to the end of the content."
-        // Needs to be here because setEditorRawText is called after every
-        // note is loaded.
-        this.redactor.editor.endFocus();
       }
     });
 
