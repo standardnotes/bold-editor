@@ -152,11 +152,6 @@ export default class Editor extends React.Component {
             markerNode.remove();
           }  
         }
-
-        // "Set the focus to the editor layer to the end of the content."
-        if (!focused) {
-          this.redactor.editor.endFocus();
-        }
       }
     });
 
