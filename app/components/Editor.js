@@ -125,8 +125,33 @@ export default class Editor extends React.Component {
       setEditorRawText: (rawText) => {
         // Called when the Bold Editor is loaded, when switching to a Bold
         // Editor note, or when uploading files, maybe in more places too.
+
+        const focused = this.redactor.editor.isFocus();
+        let point;
+
+        if (focused) {
+          // Maintain caret location if available.
+          const caretLocation = this.redactor.selection.getPosition();
+          point = {clientX: caretLocation.left, clientY: caretLocation.top};
+        }
+
+        // Set text.
         const cleaned = this.redactor.cleaner.input(rawText);
         $R('#editor', 'source.setCode', cleaned);
+
+        if (focused && point) {
+          // If caret location saved, restore, otherwise ignore.
+          // Insert custom marker node to avoid inserting newlines.
+          const marker = this.redactor.insertion.insertToPoint(point, "<marker>");
+
+          this.redactor.caret.setAfter(marker[0]);
+
+          for (const markerNode of marker){
+            // Immediately remove the custom marker node.
+            // If there is more than one marker, remove them all.
+            markerNode.remove();
+          }  
+        }
       }
     });
 
