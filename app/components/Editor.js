@@ -124,7 +124,7 @@ export default class Editor extends React.Component {
       },
       setEditorRawText: (rawText) => {
         // Called when the Bold Editor is loaded, when switching to a Bold
-        // Editor note, or when uploading files, maybe in more places too.
+        // Editor note, or when uploading files.
 
         const focused = this.redactor.editor.isFocus();
         let point;
