@@ -1,15 +1,16 @@
 import React from 'react';
-import FilesafeEmbed from "filesafe-embed";
+import FilesafeEmbed from 'filesafe-embed';
 import {
   EditorKit,
   EditorKitDelegate
-} from "sn-editor-kit";
+} from 'sn-editor-kit';
 
 // Not used directly here, but required to be imported so that it is included
 // in dist file.
 // Note that filesafe-embed also imports filesafe-js, but conditionally, so
 // it's not included in it's own dist files.
-import Filesafe from "filesafe-js";
+// eslint-disable-next-line no-unused-vars
+import Filesafe from 'filesafe-js';
 
 export default class Editor extends React.Component {
 
@@ -58,9 +59,9 @@ export default class Editor extends React.Component {
         // insertionType can be either 'afterend' or 'child'
 
         if (inVicinityOfElement) {
-          if (insertionType == "afterend") {
+          if (insertionType == 'afterend') {
             inVicinityOfElement.insertAdjacentElement('afterend', element);
-          } else if (insertionType == "child") {
+          } else if (insertionType == 'child') {
             // inVicinityOfElement.appendChild(element) doesn't work for some
             // reason when inserting videos.
             inVicinityOfElement.after(element);
@@ -86,7 +87,7 @@ export default class Editor extends React.Component {
         const previousSibling = currentElement.previousSibling;
         return previousSibling && previousSibling.textContent;
       },
-      replaceText: ({regex, replacement, previousLine}) => {
+      replaceText: ({ regex, replacement, previousLine }) => {
         const marker = this.redactor.marker.insert('start');
         let node;
         if (previousLine) {
@@ -115,7 +116,7 @@ export default class Editor extends React.Component {
         this.redactor.insertion.insertHtml(replacement, 'start');
         this.redactor.selection.restoreMarkers();
       },
-      onReceiveNote: (note) => {
+      onReceiveNote: (_note) => {
         // Empty
       },
       clearUndoHistory: () => {
@@ -136,7 +137,7 @@ export default class Editor extends React.Component {
       supportsFilesafe: true,
       // Redactor has its own debouncing, so we'll set ours to 0
       coallesedSavingDelay: 0
-    })
+    });
   }
 
   async configureEditor() {
@@ -174,7 +175,7 @@ export default class Editor extends React.Component {
           // let cleaned = this.redactor.cleaner.output(html);
           this.editorKit.onEditorValueChanged(html);
         },
-        pasted: (nodes) => {
+        pasted: (_nodes) => {
           this.editorKit.onEditorPaste();
         },
         image: {
@@ -192,7 +193,7 @@ export default class Editor extends React.Component {
       imageCaption: false,
       imageLink: false,
       imageResizable: true, // requires image to be wrapped in a figure.
-      imageUpload: (formData, files, event) => {
+      imageUpload: (formData, files, _event) => {
         // Called when images are pasted from the clipboard too.
         this.onEditorFilesDrop(files);
       }
@@ -225,14 +226,14 @@ export default class Editor extends React.Component {
         if (!descriptor || !descriptor.uuid) {
           // alert("File failed to upload. Please try again");
         }
-      })
+      });
     }
   }
 
   render() {
     return (
-      <div key="editor" className={"sn-component " + this.state.platform}>
+      <div key="editor" className={'sn-component ' + this.state.platform}>
       </div>
-    )
+    );
   }
 }
