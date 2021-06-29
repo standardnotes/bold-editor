@@ -140,7 +140,7 @@ export default class Editor extends React.Component {
     // We need to set this as a window variable so that the filesafe plugin
     // can interact with this object passing it as an opt for some reason
     // strips any functions off the objects.
-    const filesafeInstance = await this.editorKit.getFilesafe();
+    const filesafeInstance = await this.editorKit.getFileSafe();
     window.filesafe_params = {
       embed: FilesafeEmbed,
       client: filesafeInstance
