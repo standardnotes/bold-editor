@@ -2217,6 +2217,11 @@ domhandler@^2.3.0:
   dependencies:
     domelementtype "1"
 
+dompurify@^2.2.9:
+  version "2.2.9"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-2.2.9.tgz#4b42e244238032d9286a0d2c87b51313581d9624"
+  integrity sha512-+9MqacuigMIZ+1+EwoEltogyWGFTJZWU3258Rupxs+2CGs4H914G9er6pZbsme/bvb5L67o2rade9n21e4RW/w==
+
 domutils@^1.5.1, domutils@^1.7.0:
   version "1.7.0"
   resolved "https://registry.yarnpkg.com/domutils/-/domutils-1.7.0.tgz#56ea341e834e06e6748af7a1cb25da67ea9f8c2a"
@@ -5407,6 +5412,11 @@ slice-ansi@^4.0.0:
     ansi-styles "^4.0.0"
     astral-regex "^2.0.0"
     is-fullwidth-code-point "^3.0.0"
+
+sn-stylekit@3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/sn-stylekit/-/sn-stylekit-3.0.1.tgz#1dbc41e403c5e3152fcbaa72c631236df11442d2"
+  integrity sha512-KOwLcCfYYVM7PKu9NyS3LsdRlJ+dcd2Hwd5UkoFpt4xXcqqp1U+BWzRu5ciIuT97I+kCBGl6A3A7/hN66Y0svg==
 
 snapdragon-node@^2.0.1:
   version "2.1.1"

@@ -1,6 +1,8 @@
 import React from 'react';
 import FilesafeEmbed from 'filesafe-embed';
 import EditorKit from '@standardnotes/editor-kit';
+import DOMPurify  from 'dompurify';
+import { SKAlert } from 'sn-stylekit';
 
 // Not used directly here, but required to be imported so that it is included
 // in dist file.
@@ -13,7 +15,9 @@ export default class Editor extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      saveChanges: true
+    };
   }
 
   componentDidMount() {
@@ -113,12 +117,39 @@ export default class Editor extends React.Component {
         this.redactor.insertion.insertHtml(replacement, 'start');
         this.redactor.selection.restoreMarkers();
       },
-      onReceiveNote: (_note) => {
-        // Empty
-      },
       clearUndoHistory: () => {
         // Called when switching notes to prevent history mixup.
         $R('#editor', 'module.buffer.clear');
+      },
+      noteShouldBeRendered: async (note) => {
+        const renderNote = async () => {
+          const isUnsafeContent = this.checkIfUnsafeContent(note.content.text);
+          if (isUnsafeContent) {
+            const trustUnsafeContent = note.clientData['trustUnsafeContent'] ?? false;
+            if (!trustUnsafeContent) {
+              const result = await this.showUnsafeContentAlert();
+              if (result) {
+                this.setTrustUnsafeContent(note);
+              }
+              return result;
+            }
+          }
+          return true;
+        };
+
+        const enableEditing = await renderNote();
+        if (!enableEditing) {
+          $R('#editor', 'source.setCode', '');
+          $R('#editor', 'module.editor.disable');
+        } else {
+          $R('#editor', 'module.editor.enable');
+        }
+
+        this.setState({
+          saveChanges: enableEditing
+        });
+
+        return enableEditing;
       },
       setEditorRawText: (rawText) => {
         // Called when the Bold Editor is loaded, when switching to a Bold
@@ -167,15 +198,24 @@ export default class Editor extends React.Component {
       ],
       callbacks: {
         changed: (html) => {
+          if (!this.state.saveChanges) {
+            return;
+          }
           // I think it's already cleaned so we don't need to do this.
           // let cleaned = this.redactor.cleaner.output(html);
           this.editorKit.onEditorValueChanged(html);
         },
         pasted: (_nodes) => {
+          if (!this.state.saveChanges) {
+            return;
+          }
           this.editorKit.onEditorPaste();
         },
         image: {
           resized: (image) => {
+            if (!this.state.saveChanges) {
+              return;
+            }
             // Underlying html will change, triggering save event.
             // New img dimensions need to be copied over to figure element.
             const img = image.nodes[0];
@@ -211,6 +251,9 @@ export default class Editor extends React.Component {
   }
 
   onEditorFilesDrop(files) {
+    if (!this.state.saveChanges) {
+      return;
+    }
     if (!this.editorKit.canUploadFiles()) {
       // Open filesafe modal
       this.redactor.plugin.filesafe.open();
@@ -226,10 +269,94 @@ export default class Editor extends React.Component {
     }
   }
 
+  /**
+   * Checks if HTML is safe to render.
+   */
+  checkIfUnsafeContent(renderedHtml) {
+    const sanitizedHtml = DOMPurify.sanitize(renderedHtml, {
+      /**
+       * We don't need script or style tags.
+       */
+      FORBID_TAGS: ['script', 'style'],
+      /**
+       * XSS payloads can be injected via these attributes.
+       */
+      FORBID_ATTR: [
+        'onerror',
+        'onload',
+        'onunload',
+        'onclick',
+        'ondblclick',
+        'onmousedown',
+        'onmouseup',
+        'onmouseover',
+        'onmousemove',
+        'onmouseout',
+        'onfocus',
+        'onblur',
+        'onkeypress',
+        'onkeydown',
+        'onkeyup',
+        'onsubmit',
+        'onreset',
+        'onselect',
+        'onchange'
+      ]
+    });
+
+    /**
+     * Create documents from both the sanitized string and the rendered string.
+     * This will allow us to compare them, and if they are not equal
+     * (i.e: do not contain the same properties, attributes, inner text, etc)
+     * it means something was stripped.
+     */
+    const renderedDom = new DOMParser().parseFromString(renderedHtml, 'text/html');
+    const sanitizedDom = new DOMParser().parseFromString(sanitizedHtml, 'text/html');
+    return !renderedDom.isEqualNode(sanitizedDom);
+  }
+
+  async showUnsafeContentAlert() {
+    const text = 'We’ve detected that this note contains a script or code snippet which may be unsafe to execute. ' +
+                  'Scripts executed in the editor have the ability to impersonate as the editor to Standard Notes. ' +
+                  'Press Continue to mark this script as safe and proceed, or Cancel to avoid rendering this note.';
+
+    return new Promise((resolve) => {
+      const alert = new SKAlert({
+        title: null,
+        text,
+        buttons: [
+          {
+            text: 'Cancel',
+            style: 'neutral',
+            action: function() {
+              resolve(false);
+            },
+          },
+          {
+            text: 'Continue',
+            style: 'danger',
+            action: function() {
+              resolve(true);
+            },
+          },
+        ]
+      });
+      alert.present();
+    });
+  }
+
+  setTrustUnsafeContent(note) {
+    this.editorKit.saveItemWithPresave(note, () => {
+      note.clientData = {
+        ...note.clientData,
+        trustUnsafeContent: true
+      };
+    });
+  }
+
   render() {
     return (
-      <div key="editor" className={'sn-component ' + this.state.platform}>
-      </div>
+      <div key="editor" className={'sn-component'} />
     );
   }
 }
