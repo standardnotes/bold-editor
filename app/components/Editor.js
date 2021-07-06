@@ -119,7 +119,7 @@ export default class Editor extends React.Component {
         // Called when switching notes to prevent history mixup.
         $R('#editor', 'module.buffer.clear');
       },
-      noteShouldBeRendered: async (note) => {
+      onNoteValueChange: async (note) => {
         const shouldRenderNote = async () => {
           const isUnsafeContent = this.checkIfUnsafeContent(note.content.text);
           if (isUnsafeContent) {
@@ -142,10 +142,11 @@ export default class Editor extends React.Component {
         } else {
           $R('#editor', 'disableReadOnly');
         }
-
-        return renderNote;
       },
       setEditorRawText: (rawText) => {
+        if (this.redactor.isReadOnly()) {
+          return;
+        }
         // Called when the Bold Editor is loaded, when switching to a Bold
         // Editor note, or when uploading files, maybe in more places too.
         const cleaned = this.redactor.cleaner.input(rawText);
