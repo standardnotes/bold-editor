@@ -15,9 +15,7 @@ export default class Editor extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      saveChanges: true
-    };
+    this.state = {};
   }
 
   componentDidMount() {
@@ -140,14 +138,10 @@ export default class Editor extends React.Component {
         const enableEditing = await renderNote();
         if (!enableEditing) {
           $R('#editor', 'source.setCode', '');
-          $R('#editor', 'module.editor.disable');
+          $R('#editor', 'enableReadOnly');
         } else {
-          $R('#editor', 'module.editor.enable');
+          $R('#editor', 'disableReadOnly');
         }
-
-        this.setState({
-          saveChanges: enableEditing
-        });
 
         return enableEditing;
       },
@@ -198,24 +192,15 @@ export default class Editor extends React.Component {
       ],
       callbacks: {
         changed: (html) => {
-          if (!this.state.saveChanges) {
-            return;
-          }
           // I think it's already cleaned so we don't need to do this.
           // let cleaned = this.redactor.cleaner.output(html);
           this.editorKit.onEditorValueChanged(html);
         },
         pasted: (_nodes) => {
-          if (!this.state.saveChanges) {
-            return;
-          }
           this.editorKit.onEditorPaste();
         },
         image: {
           resized: (image) => {
-            if (!this.state.saveChanges) {
-              return;
-            }
             // Underlying html will change, triggering save event.
             // New img dimensions need to be copied over to figure element.
             const img = image.nodes[0];
@@ -251,9 +236,6 @@ export default class Editor extends React.Component {
   }
 
   onEditorFilesDrop(files) {
-    if (!this.state.saveChanges) {
-      return;
-    }
     if (!this.editorKit.canUploadFiles()) {
       // Open filesafe modal
       this.redactor.plugin.filesafe.open();
