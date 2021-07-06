@@ -120,7 +120,7 @@ export default class Editor extends React.Component {
         $R('#editor', 'module.buffer.clear');
       },
       noteShouldBeRendered: async (note) => {
-        const renderNote = async () => {
+        const shouldRenderNote = async () => {
           const isUnsafeContent = this.checkIfUnsafeContent(note.content.text);
           if (isUnsafeContent) {
             const trustUnsafeContent = note.clientData['trustUnsafeContent'] ?? false;
@@ -135,15 +135,15 @@ export default class Editor extends React.Component {
           return true;
         };
 
-        const enableEditing = await renderNote();
-        if (!enableEditing) {
+        const renderNote = await shouldRenderNote();
+        if (!renderNote) {
           $R('#editor', 'source.setCode', '');
           $R('#editor', 'enableReadOnly');
         } else {
           $R('#editor', 'disableReadOnly');
         }
 
-        return enableEditing;
+        return renderNote;
       },
       setEditorRawText: (rawText) => {
         // Called when the Bold Editor is loaded, when switching to a Bold
