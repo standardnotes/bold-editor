@@ -940,10 +940,10 @@
     "@nodelib/fs.scandir" "2.1.4"
     fastq "^1.6.0"
 
-"@standardnotes/editor-kit@2.1.0":
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/@standardnotes/editor-kit/-/editor-kit-2.1.0.tgz#dd32ac7d4965137b4fef0b34683ddfa50830aaca"
-  integrity sha512-pjDcjkNvth+51LnHChT7klj4vfYAb//rALyCdGMQqCWvvVKBCRvHPSkLEMBlhEmKzv7urf/1aPkGB4+8qUMqYg==
+"@standardnotes/editor-kit@2.1.1":
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/@standardnotes/editor-kit/-/editor-kit-2.1.1.tgz#cb896bac6e2b1aa80e656f8996609abb1e1d3a20"
+  integrity sha512-lZ3JynBuPv5lMSddvI4sg0PnJpiDbsWKRW5OqhTc7oTpYrybAlGCYYxrDdTD2WMQaulakvUJVFL7664YEpUuKQ==
 
 "@standardnotes/eslint-config-extensions@^1.0.3":
   version "1.0.4"
