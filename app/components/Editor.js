@@ -172,6 +172,7 @@ export default class Editor extends React.Component {
       client: filesafeInstance
     };
     this.redactor = $R('#editor', {
+      markup: 'div',
       styles: true,
       toolbarFixed: true, // sticky toolbar
       tabAsSpaces: 2, // currently tab only works if you use spaces.
