@@ -193,6 +193,11 @@ html {
     color: var(--sn-stylekit-info-color) !important;
 }
 
+ol *,
+li * {
+    font-family: inherit;
+}
+
 hr {
     background-color: var(--sn-stylekit-shadow-color) !important;
 }
