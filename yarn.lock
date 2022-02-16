@@ -2718,10 +2718,10 @@ file-uri-to-path@1.0.0:
   resolved "https://registry.yarnpkg.com/file-uri-to-path/-/file-uri-to-path-1.0.0.tgz#553a7b8446ff6f684359c445f1e37a05dacc33dd"
   integrity sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw==
 
-filesafe-embed@1.0.10:
-  version "1.0.10"
-  resolved "https://registry.yarnpkg.com/filesafe-embed/-/filesafe-embed-1.0.10.tgz#23e95275693086c05ad0dedc2d970ff55a64a21c"
-  integrity sha512-C1h5T1kLIhiA2AM1rV1mVH+vaKQHL36q9L35uR8r3AvJJ88Xu6P0Urgd2ibI4pcIp3ouy6g0dnXq/d+7cwCyVg==
+filesafe-embed@1.0.11:
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/filesafe-embed/-/filesafe-embed-1.0.11.tgz#604955ed5c76f8c29d1cb695561d6cade209839c"
+  integrity sha512-9no1IVLNe8akt3wyDXF3la0eGq/f3XcYXizzQJxgriMzjsjJm0f8qviqpjy7n0zplEB7LqgppaS4AFBBGA3FMg==
 
 filesafe-js@1.0.4:
   version "1.0.4"
